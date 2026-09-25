@@ -156,6 +156,39 @@
     #rotate, #rotate.out { transition: opacity .25s ease; transform: translate(-50%, 0); }
     #rotate .phone { animation-duration: 6s; } #rotate .arc, #rotate .arrow { animation: none; opacity: 0; }
   }
+
+  /* ---- rotate gate: nothing starts on a portrait phone / tablet until it is turned sideways ---- */
+  html.gated, html.gated body { overflow: hidden; }
+  #gate { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; padding: 24px; text-align: center; color: #f2f4f8;
+    background: radial-gradient(120% 90% at 50% 0%, rgba(20,24,32,.98), rgba(7,9,13,.985) 60%, #05070a 100%); opacity: 0; pointer-events: none;
+    transition: opacity .45s ease; font-family: "Noto Sans JP", -apple-system, "SF Pro Text", "Hiragino Sans", sans-serif; touch-action: none; }
+  #gate.in { opacity: 1; pointer-events: auto; }
+  #gate .inner { max-width: 360px; transform: translateY(6px); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+  #gate.in .inner { transform: translateY(0); }
+  #gate .big { width: 150px; height: 150px; margin: 0 auto 6px; }
+  #gate .big svg { width: 150px; height: 150px; overflow: visible; }
+  #gate .big .phone { transform-origin: 28px 28px; animation: rot-phone 3.2s cubic-bezier(.65,0,.35,1) infinite; }
+  #gate .big .screen { fill: rgba(255,255,255,.08); animation: rot-screen 3.2s ease infinite; }
+  #gate .big .arc { fill: none; stroke: #35d392; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 60; stroke-dashoffset: 60; animation: rot-arc 3.2s ease infinite; }
+  #gate .big .arrow { fill: #35d392; opacity: 0; animation: rot-arrow 3.2s ease infinite; }
+  #gate .big .check { fill: none; stroke: #35d392; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; opacity: 0; }
+  #gate .lock { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: rgba(53,211,146,.9); border: 1px solid rgba(53,211,146,.35); border-radius: 999px; padding: 5px 12px; margin-bottom: 14px; background: rgba(53,211,146,.06); }
+  #gate .lock i { width: 7px; height: 7px; border-radius: 50%; background: #35d392; box-shadow: 0 0 0 0 rgba(53,211,146,.6); animation: gate-pulse 1.6s ease-out infinite; }
+  @keyframes gate-pulse { 0% { box-shadow: 0 0 0 0 rgba(53,211,146,.6); } 100% { box-shadow: 0 0 0 9px rgba(53,211,146,0); } }
+  #gate h2 { margin: 0 0 8px; font-size: 24px; font-weight: 800; letter-spacing: .02em; line-height: 1.3; }
+  #gate p { margin: 0; font-size: 14px; line-height: 1.75; color: rgba(235,238,245,.72); }
+  #gate p.hint { font-size: 12px; color: rgba(235,238,245,.45); margin-top: 14px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .5s ease, opacity .5s ease; }
+  #gate.hint p.hint { max-height: 60px; opacity: 1; }
+  #gate .bar { width: 120px; height: 3px; margin: 22px auto 0; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
+  #gate .bar i { display: block; width: 40%; height: 100%; background: #35d392; border-radius: 2px; animation: gate-scan 1.8s ease-in-out infinite; }
+  @keyframes gate-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
+  #gate.ok .big .phone, #gate.ok .big .arc, #gate.ok .big .arrow { animation: none; }
+  #gate.ok .big .phone { transform: rotate(-90deg); } #gate.ok .big .screen { animation: none; fill: rgba(53,211,146,.55); } #gate.ok .big .arc, #gate.ok .big .arrow { opacity: 0; }
+  #gate.ok .big .check { animation: rot-check .45s cubic-bezier(.3,.7,.2,1) .1s forwards; }
+  #gate.ok .lock i { animation: none; } #gate.ok .bar { opacity: 0; }
+  #gate.out { opacity: 0; pointer-events: none; transition: opacity .5s ease .15s; }
+  #gate.out .inner { transform: translateY(-14px) scale(1.04); transition: transform .6s cubic-bezier(.4,0,.2,1) .1s; }
+  @media (prefers-reduced-motion: reduce) { #gate .big .phone { animation-duration: 6s; } #gate .big .arc, #gate .big .arrow, #gate .bar i { animation: none; } }
   @media (max-width: 760px) {
     .steps { grid-template-columns: 1fr; } .cams { grid-template-columns: 1fr; } nav .meta { display: none; }
     .wrap { padding: 14px 10px 40px; } h1 { font-size: 18px; } #time { min-width: 0; } .hide-sm { display: none; }
@@ -299,6 +332,27 @@
   </div>
 </section>
 <div id="lightbox"><img alt=""></div>
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" hidden>
+  <div class="inner">
+    <div class="big" aria-hidden="true">
+      <svg viewBox="0 0 56 56">
+        <path class="arc" d="M 45 14 A 22 22 0 0 1 49 33" />
+        <path class="arrow" d="M 44 30 L 50.5 36.5 L 53 27.5 Z" />
+        <g class="phone">
+          <rect x="18" y="9" width="20" height="38" rx="4.5" fill="rgba(255,255,255,.06)" stroke="#f2f4f8" stroke-width="2" />
+          <rect class="screen" x="21" y="14" width="14" height="26" rx="1.5" />
+          <circle cx="28" cy="43.5" r="1.3" fill="#f2f4f8" opacity=".7" />
+        </g>
+        <path class="check" d="M 19 29 L 25.5 35.5 L 38 22" />
+      </svg>
+    </div>
+    <div class="lock"><i></i><span id="gateLock">LANDSCAPE ONLY</span></div>
+    <h2 id="gateTitle">スマホを横にしてください</h2>
+    <p id="gateBody">横向きにすると、自動で始まります。<br>縦向きのままでは再生できません。</p>
+    <p class="hint">回転しない場合は、コントロールセンターで画面の回転ロックを解除してください。</p>
+    <div class="bar"><i></i></div>
+  </div>
+</div>
 <div id="rotate" role="status" aria-live="polite" hidden>
   <div class="card">
     <div class="app">C<small>AI</small></div>
@@ -328,12 +382,13 @@
   const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
   // ---------- chapters ----------
   const frame = $('#spaceFrame');
-  let currentChapter = 'intro';
+  let currentChapter = 'intro', gated = false;
   function go(ch) {
     currentChapter = ch;
     $$('.chapter, #space').forEach(el => el.classList.toggle('on', el.id === ch));
     $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.ch === ch));
-    if (ch === 'space' && !frame.src) frame.src = frame.dataset.src;
+    gated = typeof needsGate === 'function' && needsGate(ch);
+    if (ch === 'space' && !frame.src && !gated) frame.src = frame.dataset.src;
     if (ch !== 'cams') camPause();
     if (ch !== 'film') pauseAll();
     if (ch === 'orbit') orbitInit(); else if (window.orbitPause) window.orbitPause();
@@ -544,15 +599,52 @@
     if (navigator.vibrate) { try { navigator.vibrate([6, 30, 6]); } catch (e) {} }
     rotateHide(2200);
   }
+  // ---- the gate: the wide-screen chapters do not start at all until the device is landscape
+  const gate = $('#gate'), gateTitle = $('#gateTitle'), gateBody = $('#gateBody'), gateLock = $('#gateLock');
+  let gateTimer = 0, gateHintTimer = 0, gateUp = false;
+  const wideChapter = ch => ch === 'space' || ch === 'film' || ch === 'orbit';
+  function needsGate(ch) { return touchDevice && wideChapter(ch) && isPortrait(); }
+  function gateShow() {
+    clearTimeout(gateTimer); clearTimeout(gateHintTimer);
+    gated = true; gateUp = true;
+    gate.hidden = false; gate.classList.remove('out', 'ok', 'hint');
+    gateTitle.textContent = 'スマホを横にしてください';
+    gateBody.innerHTML = (currentChapter === 'space' ? '横向きにすると、3D 空間が自動で始まります。' : currentChapter === 'orbit' ? '横向きにすると、Unreal の周回映像が自動で始まります。' : '横向きにすると、Unreal 映像が自動で始まります。') + '<br>縦向きのままでは再生できません。';
+    gateLock.textContent = 'LANDSCAPE ONLY';
+    document.documentElement.classList.add('gated');
+    requestAnimationFrame(() => requestAnimationFrame(() => gate.classList.add('in')));
+    // stop whatever is running behind the gate
+    try { pauseAll(); } catch (e) {}
+    try { if (window.orbitPause) window.orbitPause(); } catch (e) {}
+    gateHintTimer = setTimeout(() => { if (gated) gate.classList.add('hint'); }, 7000);
+  }
+  function gateRelease(success) {
+    gated = false;
+    if (!gateUp) return;
+    gateUp = false;
+    clearTimeout(gateHintTimer);
+    document.documentElement.classList.remove('gated');
+    if (currentChapter === 'space' && !frame.src) frame.src = frame.dataset.src;   // now it may start
+    const finish = () => { gate.classList.remove('in'); gate.classList.add('out'); setTimeout(() => { if (!gated) { gate.hidden = true; gate.classList.remove('out', 'ok', 'hint'); } }, 700); };
+    if (success) {
+      gate.classList.add('ok'); gate.classList.remove('hint');
+      gateTitle.textContent = '横向きになりました';
+      gateBody.textContent = '始めます。';
+      gateLock.textContent = 'READY';
+      gateTimer = setTimeout(finish, 900);
+    } else finish();
+  }
   function rotateCheck() {
-    const wants = touchDevice && (currentChapter === 'space' || currentChapter === 'film' || currentChapter === 'orbit');
+    const wants = touchDevice && wideChapter(currentChapter);
     clearTimeout(okTimer);
-    if (!wants) { rotateHide(); return; }
+    if (!wants) { rotateHide(); gateRelease(false); return; }
     if (isPortrait()) {
+      if (!gateUp) gateShow();
       if (!rotateDismissed && !rotateShown) okTimer = setTimeout(rotateShow, 500);
     } else {
       rotateDismissed = false;            // a real rotation resets the dismissal
       if (rotateShown) rotateSuccess();
+      gateRelease(true);
     }
   }
   window.rotateCheck = rotateCheck;

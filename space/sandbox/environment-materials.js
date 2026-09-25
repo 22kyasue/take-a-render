@@ -33,9 +33,9 @@ export function enhanceMaterials({ scene, renderer, root, indoor, stadium, groun
    const ctx = canvas.getContext('2d'); ctx.drawImage(map.image, 0, 0);
    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
    for (let i = 0; i < pixels.data.length; i += 4) {
-    pixels.data[i] = pixels.data[i] * .48 + 192 * .52;
-    pixels.data[i + 1] = pixels.data[i + 1] * .48 + 151 * .52;
-    pixels.data[i + 2] = pixels.data[i + 2] * .48 + 95 * .52;
+    pixels.data[i] = Math.min(255, pixels.data[i] * .62 + 224 * .42);
+    pixels.data[i + 1] = Math.min(255, pixels.data[i + 1] * .62 + 186 * .42);
+    pixels.data[i + 2] = Math.min(255, pixels.data[i + 2] * .62 + 124 * .42);
    }
    ctx.putImageData(pixels, 0, 0); map.image = canvas; map.needsUpdate = true;
   }
@@ -74,10 +74,10 @@ export function enhanceMaterials({ scene, renderer, root, indoor, stadium, groun
   if (inside && textures.color) {
    material.map = textures.color;
    material.normalMap = textures.normal || null;
-   material.normalScale.set(.075, .075);
+   material.normalScale.set(.12, .12);
    material.roughnessMap = textures.rough || null;
-   material.aoMap = textures.ao || null; material.aoMapIntensity = .13;
-   material.roughness = .8; material.clearcoat = .23; material.clearcoatRoughness = .38;
+   material.aoMap = null;
+   material.roughness = .58; material.clearcoat = .32; material.clearcoatRoughness = .3;
   } else if (!inside && textures.grassColor) {
    material.map = textures.grassColor; material.normalMap = textures.grassNormal || null;
    material.normalScale.set(.45, .45); material.roughnessMap = null;
@@ -105,8 +105,8 @@ export function enhanceMaterials({ scene, renderer, root, indoor, stadium, groun
   renderer.domElement.dataset.environmentAssets = textures.color && environments[type] ? 'poly-haven' : 'fallback';
  }
  const ready = Promise.allSettled([
-  loadMap('color', 'wood-Diffuse.jpg', true), loadMap('normal', 'wood-nor_gl.jpg'),
-  loadMap('rough', 'wood-Rough.jpg'), loadMap('ao', 'wood-AO.jpg'),
+  loadMap('color', 'scans/oak_wood_planks-Diffuse.jpg', true), loadMap('normal', 'scans/oak_wood_planks-nor_gl.jpg'),
+  loadMap('rough', 'scans/oak_wood_planks-Rough.jpg'),
   loadMap('grassColor', 'grass-Color.jpg', true, true), loadMap('grassNormal', 'grass-NormalGL.jpg', false, true),
   loadMap('grassRough', 'grass-Roughness.jpg', false, true), loadMap('grassAO', 'grass-AmbientOcclusion.jpg', false, true),
   loadHDR('indoor', 'school_hall.hdr'), loadHDR('outdoor', 'noon_grass.hdr'), loadHDR('stadium', 'scans/orlando_stadium.hdr'),

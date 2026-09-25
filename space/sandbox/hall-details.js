@@ -5,14 +5,14 @@ import { photoSurface } from './photo-surfaces.js';
 export function addHallDetails({ indoor, roof, box, tube, steel }) {
  const finish = (color, roughness = .75, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
  const plaster = photoSurface(finish(0xe7e4da), 'grey_plaster', 2.5), dark = finish(0x394247, .48, .45);
- const aluminium = finish(0xa0a7a4, .35, .72), timber = photoSurface(finish(0xffffff), 'oak_wood_planks', 2);
+ const aluminium = finish(0xa0a7a4, .35, .72), timber = finish(0x1e3a3f, .82);
  const rubber = finish(0x333c3a, .95), concrete = photoSurface(finish(0xd1d1ca, .92), 'concrete_floor', 2.08);
  const lens = new THREE.MeshStandardMaterial({ color: 0xf6f2df, emissive: 0xfff3db, emissiveIntensity: 2.1, roughness: .28 });
  const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
  const ctx = canvas.getContext('2d');
- ctx.fillStyle = '#c5c3b7'; ctx.fillRect(0, 0, 512, 512);
+ ctx.fillStyle = '#e9e4d6'; ctx.fillRect(0, 0, 512, 512);
  // Recessed perforations: a shared texture avoids thousands of little meshes.
- ctx.fillStyle = '#85867b';
+ ctx.fillStyle = '#d3cdbd';
  for (let y = 8; y < 512; y += 16) for (let x = 8; x < 512; x += 16) { ctx.beginPath(); ctx.arc(x, y, 1.3, 0, Math.PI * 2); ctx.fill(); }
  const acousticMap = new THREE.CanvasTexture(canvas); acousticMap.colorSpace = THREE.SRGBColorSpace;
  acousticMap.wrapS = acousticMap.wrapT = THREE.RepeatWrapping; acousticMap.repeat.set(2, 1);

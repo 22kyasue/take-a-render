@@ -71,7 +71,7 @@ function seatGeometry(width, height, depth, radius) {
  geometry.translate(0, 0, -depth / 2); return geometry;
 }
 function seats(group, rows, color) {
- const concrete = photoSurface(mat(0xd1d1ca, .92), 'concrete_floor', 2.08), material = mat(color, .57), count = rows * 68 * 2;
+ const concrete = rows === 4 ? photoSurface(mat(0xd8b17d, .78), 'oak_wood_planks', 2) : photoSurface(mat(0xd1d1ca, .92), 'concrete_floor', 2.08), material = mat(color, .57), count = rows * 68 * 2;
  const seat = seatGeometry(.45, .43, .055, .065); seat.rotateX(-Math.PI / 2);
  const mesh = new THREE.InstancedMesh(seat, material, count);
  const backs = new THREE.InstancedMesh(seatGeometry(.45, .37, .05, .06), material, count);
@@ -104,23 +104,24 @@ export function createEnvironment(scene, renderer) {
  const apron = box(root, [48, .15, 27], [0, -.095, 0], photoSurface(mat(0x8d9390, .9), 'concrete_floor', 2.08)); markings(root); const updateNet = goal(root, 1); goal(root, -1);
  const indoor = new THREE.Group(), outdoor = new THREE.Group(), stadium = new THREE.Group(); root.add(indoor, outdoor, stadium);
  const roof = new THREE.Group(); indoor.add(roof);
- const wall = photoSurface(mat(0xe6e4db, .94), 'grey_plaster', 2.5), steel = photoSurface(mat(0x999f9b, .65, .55), 'metal_plate', .5), panels = photoSurface(mat(0xffffff, .75), 'oak_wood_planks', 2);
+ const green = mat(0x1e3a3f, .82), pilasterDark = mat(0x0e1113, .5, .3), capRail = mat(0x0d1012, .5), skirt = mat(0x050607, .85);
+ const wall = photoSurface(mat(0xefe9da, .94), 'grey_plaster', 2.5), steel = photoSurface(mat(0x999f9b, .65, .55), 'metal_plate', .5), panels = photoSurface(mat(0xffffff, .75), 'oak_wood_planks', 2);
  for (const s of [-1, 1]) {
   box(indoor, [50, 9, .25], [0, 4.5, s * 19], wall); box(indoor, [.25, 9, 38], [s * 25, 4.5, 0], wall);
-  box(indoor, [50, 2.3, .15], [0, 1.15, s * 18.8], panels);
-  for (let x = -22; x <= 22; x += 4) { box(indoor, [.2, 10, .25], [x, 5, s * 18.4], steel); box(indoor, [2.9, 2.2, .09], [x, 6, s * 18.8], new THREE.MeshStandardMaterial({ color: 0xb4c5c7, emissive: 0xb4c5c7, emissiveIntensity: .35, roughness: .24, metalness: .18 })); }
+  box(indoor, [50, 2.6, .15], [0, 1.3, s * 18.8], green); box(indoor, [50, .04, .18], [0, 2.62, s * 18.78], capRail); box(indoor, [50, .24, .2], [0, .12, s * 18.76], skirt);
+  for (let x = -22; x <= 22; x += 4) { box(indoor, [.28, 10, .28], [x, 5, s * 18.4], pilasterDark); box(indoor, [2.9, 2.2, .09], [x, 6, s * 18.8], new THREE.MeshStandardMaterial({ color: 0xb4c5c7, emissive: 0xb4c5c7, emissiveIntensity: .35, roughness: .24, metalness: .18 })); }
  }
  for (let x = -24; x <= 24; x += 6) { tube(roof, [x, 9, -19], [x, 11, 0], .09, steel); tube(roof, [x, 11, 0], [x, 9, 19], .09, steel); tube(roof, [x, 9, -19], [x, 9, 19], .06, steel); }
- seats(indoor, 4, 0x426b68); seats(stadium, 13, 0x31537c);
+ seats(indoor, 4, 0xb8824a); seats(stadium, 13, 0x31537c);
  // Roof, acoustic battens, safety rails and inset doors give the hall real scale.
- const roofMaterial = mat(0xd2d0c8, .86), railMaterial = mat(0xa8afb2, .32, .7);
+ const roofMaterial = mat(0x6e5540, .85), railMaterial = mat(0xa8afb2, .32, .7);
  const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(50, 38), roofMaterial);
  // Render the underside only so orbiting above the venue gives a cutaway view.
  ceiling.rotation.x = Math.PI / 2; ceiling.position.y = 11.2;
  ceiling.castShadow = ceiling.receiveShadow = true; roof.add(ceiling);
  for (let x = -24; x <= 24; x += 2) box(roof, [.055, .13, 38], [x, 11.05, 0], steel);
  for (const s of [-1, 1]) {
-  for (let x = -24; x < 24; x += .23) box(indoor, [.035, 2.2, .04], [x, 1.15, s * 18.7], mat(0x604b36, .8));
+  for (let x = -24; x < 24; x += 1.2) box(indoor, [.02, 2.6, .03], [x, 1.3, s * 18.7], mat(0x0a1214, .9));
   tube(indoor, [-22.5, 1.05, s * 12.45], [22.5, 1.05, s * 12.45], .025, railMaterial);
   for (let x = -22.5; x <= 22.5; x += 3) tube(indoor, [x, .1, s * 12.45], [x, 1.05, s * 12.45], .025, railMaterial);
   for (const z of [-8, 8]) {

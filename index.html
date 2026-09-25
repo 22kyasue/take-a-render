@@ -51,7 +51,7 @@
   .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .row .spacer { flex: 1; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
   .card p { margin: 0 0 8px; color: var(--txt-2); font-size: 13px; line-height: 1.75; } .card b { color: var(--txt); }
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 22px; }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 22px; }
   .step { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color .15s; }
   .step:hover { border-color: rgba(53,211,146,.45); }
   .step .n { font-family: var(--mono); color: var(--accent); font-size: 11px; letter-spacing: .12em; }
@@ -95,6 +95,23 @@
   figcaption { color: var(--txt-3); font-size: 11.5px; margin: 8px 0 0; font-family: var(--mono); }
   #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.94); z-index: 50; display: none; place-items: center; cursor: zoom-out; padding: 20px; }
   #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; } #lightbox.open { display: grid; }
+  /* ---- chapter 4: orbit ---- */
+  #orbit .stage { position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 16 / 9; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+  #orbit .stage:active { cursor: grabbing; }
+  #orbit .stage video { position: absolute; inset: 0; width: 100%; height: 100%; display: none; background: #000; transform-origin: center; pointer-events: none; }
+  #orbit .stage video.cur { display: block; }
+  #orbit .hud { position: absolute; left: 12px; top: 12px; z-index: 3; display: flex; gap: 8px; align-items: center; pointer-events: none; }
+  #orbit .hud span { background: rgba(0,0,0,.6); color: #fff; font-family: var(--mono); font-size: 11.5px; padding: 5px 9px; border-radius: 6px; }
+  #orbit .compass { position: absolute; right: 12px; top: 12px; z-index: 3; width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.45); pointer-events: none; }
+  #orbit .compass i { position: absolute; left: 50%; top: 50%; width: 2px; height: 26px; background: var(--accent); transform-origin: 50% 100%; transform: translate(-50%, -100%) rotate(0deg); border-radius: 2px; }
+  #orbit .compass b { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: #fff; }
+  #orbit .swipehint { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); z-index: 3; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 999px; pointer-events: none; transition: opacity .4s; white-space: nowrap; }
+  #orbit .stage.touched .swipehint { opacity: 0; }
+  #orbit .loading { position: absolute; inset: 0; display: grid; place-items: center; z-index: 2; color: var(--txt-2); font-size: 13px; background: #000; }
+  #orbit .stage.ready .loading { display: none; }
+  #orbit .ctl { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; padding: 10px 12px; background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,0)); }
+  #orbit .moments { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  #orbit .moments .btn i { font-style: normal; font-family: var(--mono); color: var(--txt-3); margin-right: 5px; font-size: 10.5px; }
   footer { color: var(--txt-3); font-size: 11px; margin-top: 40px; line-height: 1.7; }
   @media (max-width: 760px) {
     .steps { grid-template-columns: 1fr; } .cams { grid-template-columns: 1fr; } nav .meta { display: none; }
@@ -110,6 +127,7 @@
     <button class="tab" data-ch="cams" role="tab"><i>01</i>4 台のカメラ</button>
     <button class="tab" data-ch="space" role="tab"><i>02</i>3D で動き回る</button>
     <button class="tab" data-ch="film" role="tab"><i>03</i>Unreal 映像</button>
+    <button class="tab" data-ch="orbit" role="tab"><i>04</i>Unreal で動き回る</button>
   </div>
   <div class="spacer"></div>
   <div class="meta">MORIOKA / TAKE A</div>
@@ -124,6 +142,7 @@
       <div class="step" data-go="cams"><div class="n">01 / SOURCE</div><h3>4 台のカメラ映像</h3><p>西側・ゴール裏・東側・サイド。同じ瞬間を 4 方向から同期再生。</p></div>
       <div class="step" data-go="space"><div class="n">02 / SPACE</div><h3>3D で動き回る</h3><p>指で回転、ピンチでズーム。カメラ配置・選手に寄る・真上など視点をワンタップで切替。</p></div>
       <div class="step" data-go="film"><div class="n">03 / FILM</div><h3>Unreal Engine 5 映像</h3><p>同じ動きを木の体育館でレンダリング。新旧の比較とスロー再生。</p></div>
+      <div class="step" data-go="orbit"><div class="n">04 / ORBIT</div><h3>Unreal で動き回る</h3><p>Unreal 画質のまま、指で視点をぐるっと回す。時間も自由に止めて見られる。</p></div>
     </div>
     <div class="row"><button class="btn primary" data-go="space">3D 空間を開く →</button><button class="btn" data-go="cams">まず 4 台の映像を見る</button></div>
   </div>
@@ -205,6 +224,37 @@
     <footer>© Clutch AI. このページは検索エンジンに登録されません。共有は URL を知っている人に限られます。</footer>
   </div>
 </section>
+<!-- 04 orbit -->
+<section class="chapter" id="orbit">
+  <div class="wrap">
+    <h1>04 · Unreal で動き回る</h1>
+    <p class="sub">Unreal Engine 5 で 2 人を中心に 36 方向から同時にレンダリングした映像です。<b>横にスワイプ(ドラッグ)で視点が回り</b>、スライダーで時間を止めたり戻したりできます。2 本指でピンチすると寄れます。</p>
+    <div class="stage" id="orbitStage">
+      <div class="loading">Unreal の映像を読み込んでいます…</div>
+      <div class="hud"><span id="orbitAngle">視点 000°</span><span id="orbitTime">1.50 s</span></div>
+      <div class="compass"><i id="orbitNeedle"></i><b></b></div>
+      <div class="swipehint">← 横にスワイプで視点を回す →</div>
+      <div class="ctl">
+        <input id="orbitSeek" type="range" min="0" max="149" step="1" value="45" aria-label="時間">
+        <div class="row">
+          <button class="btn icon" id="orbitPlay" title="再生 / 停止">▶</button>
+          <button class="btn icon" id="orbitPrev" title="1 コマ戻る">⏮</button>
+          <button class="btn icon" id="orbitNext" title="1 コマ進む">⏭</button>
+          <div class="spacer"></div>
+          <div class="seg" id="orbitSpeed"><button class="btn" data-speed="0.25">0.25×</button><button class="btn on" data-speed="0.5">0.5×</button><button class="btn" data-speed="1">1×</button></div>
+          <button class="btn" id="orbitAuto" title="自動で一周">◎ 自動で一周</button>
+          <button class="btn" id="orbitReset" title="ズームと視点を戻す">⟲</button>
+          <button class="btn icon" id="orbitFs" title="全画面">⛶</button>
+        </div>
+      </div>
+    </div>
+    <div class="moments" id="orbitMoments"></div>
+    <div class="card" style="margin-top:22px">
+      <p><b>仕組み</b>: 2 人の中間点を追う追従カメラを 10° 刻みで 36 台置き、Unreal の Movie Render Queue で 36 本の 5 秒映像(1280×720)を一括レンダリングしています。ブラウザは指の動きに合わせて、同じ時刻のまま隣の視点の映像に切り替えます。</p>
+      <p>視点の高さは 1 段(見下ろし 18°)。もっと高い・低い視点や、ゴール裏からの固定カメラは、同じ仕組みで増やせます。</p>
+    </div>
+  </div>
+</section>
 <div id="lightbox"><img alt=""></div>
 
 <script>
@@ -218,6 +268,7 @@
     if (ch === 'space' && !frame.src) frame.src = frame.dataset.src;
     if (ch !== 'cams') camPause();
     if (ch !== 'film') pauseAll();
+    if (ch === 'orbit') orbitInit(); else if (window.orbitPause) window.orbitPause();
     history.replaceState(null, '', '#' + ch);
     window.scrollTo(0, 0);
   }
@@ -308,9 +359,89 @@
   lb.addEventListener('click', () => lb.classList.remove('open'));
   setMode('A');
 
-  // deep link: #space / #cams / #film
+  // ---------- 04: orbit viewer ----------
+  const ORBIT = { n: 36, fps: 30, frames: 150, base: 'orbit/' };
+  let orbitReady = false, oi = 0, ot = 45 / 30, oPlaying = false, oSpeed = .5, oZoom = 1, oAuto = false, oVids = [], oCur = null, oRaf = 0, orbitAutoAcc = 0;
+  const stage = $('#orbitStage'), oSeek = $('#orbitSeek'), oAngleEl = $('#orbitAngle'), oTimeEl = $('#orbitTime'), oNeedle = $('#orbitNeedle');
+  const MOMENTS = [['背負う', 0], ['手を伸ばす', .55], ['トラップ', 1.55], ['接触', 2.37], ['シュート', 3.38], ['フォロースルー', 4.5]];
+  $('#orbitMoments').innerHTML = MOMENTS.map(([n, tm], i) => `<button class="btn" data-t="${tm}"><i>${String(i + 1).padStart(2, '0')}</i>${n}</button>`).join('');
+  const wrapIdx = (i) => ((i % ORBIT.n) + ORBIT.n) % ORBIT.n;
+  function orbitInit() {
+    if (orbitReady) { orbitShow(oi, true); return; }
+    orbitReady = true;
+    for (let i = 0; i < ORBIT.n; i++) {
+      const v = document.createElement('video');
+      v.src = `${ORBIT.base}a${String(i).padStart(2, '0')}.mp4`; v.muted = true; v.playsInline = true; v.loop = true; v.preload = i === oi ? 'auto' : 'metadata';
+      v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
+      stage.insertBefore(v, stage.querySelector('.hud'));
+      oVids.push(v);
+    }
+    oVids[oi].addEventListener('loadeddata', () => stage.classList.add('ready'), { once: true });
+    orbitShow(oi, true);
+    if (!oRaf) oRaf = requestAnimationFrame(orbitTick);
+  }
+  function orbitShow(i, force) {
+    i = wrapIdx(i);
+    if (i === oi && !force && oCur) return;
+    const prev = oCur; oi = i; oCur = oVids[i];
+    if (prev && prev !== oCur) { prev.pause(); prev.classList.remove('cur'); }
+    oCur.classList.add('cur'); oCur.playbackRate = oSpeed; oCur.style.transform = `scale(${oZoom})`;
+    if (Math.abs(oCur.currentTime - ot) > 0.04) oCur.currentTime = ot;
+    if (oCur.readyState < 1) { const want = ot; oCur.addEventListener('loadedmetadata', () => { if (!oPlaying) oCur.currentTime = want; }, { once: true }); }
+    if (oPlaying) oCur.play().catch(() => {});
+    for (const d of [-2, -1, 1, 2]) { const nb = oVids[wrapIdx(i + d)]; nb.preload = 'auto'; if (Math.abs(nb.currentTime - ot) > 0.1) nb.currentTime = ot; }
+    const deg = Math.round(i * 360 / ORBIT.n);
+    oAngleEl.textContent = '視点 ' + String(deg).padStart(3, '0') + '°'; oNeedle.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
+  }
+  function orbitTick() {
+    if (oCur && oPlaying) ot = oCur.currentTime;
+    if (oCur) { oSeek.value = Math.round(ot * ORBIT.fps); oTimeEl.textContent = ot.toFixed(2) + ' s'; }
+    if (oAuto && oPlaying) { orbitAutoAcc += .12 * oSpeed; if (orbitAutoAcc >= 1) { orbitAutoAcc = 0; orbitShow(oi + 1); } }
+    oRaf = requestAnimationFrame(orbitTick);
+  }
+  function orbitSetTime(tm) { ot = Math.max(0, Math.min((ORBIT.frames - 1) / ORBIT.fps, tm)); if (oCur) oCur.currentTime = ot; oSeek.value = Math.round(ot * ORBIT.fps); oTimeEl.textContent = ot.toFixed(2) + ' s'; }
+  function orbitPlayPause(play) { oPlaying = play; $('#orbitPlay').textContent = play ? '❚❚' : '▶'; if (!oCur) return; if (play) oCur.play().catch(() => {}); else { oCur.pause(); ot = oCur.currentTime; } }
+  window.orbitPause = () => { if (oPlaying) orbitPlayPause(false); oAuto = false; $('#orbitAuto').classList.remove('on'); };
+  $('#orbitPlay').addEventListener('click', () => orbitPlayPause(!oPlaying));
+  $('#orbitPrev').addEventListener('click', () => { orbitPlayPause(false); orbitSetTime(ot - 1 / ORBIT.fps); });
+  $('#orbitNext').addEventListener('click', () => { orbitPlayPause(false); orbitSetTime(ot + 1 / ORBIT.fps); });
+  oSeek.addEventListener('input', () => { orbitPlayPause(false); orbitSetTime(Number(oSeek.value) / ORBIT.fps); });
+  $$('#orbitSpeed .btn').forEach(b => b.addEventListener('click', () => { oSpeed = Number(b.dataset.speed); oVids.forEach(v => { v.playbackRate = oSpeed; }); $$('#orbitSpeed .btn').forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('#orbitMoments .btn').forEach(b => b.addEventListener('click', () => { orbitPlayPause(false); orbitSetTime(Number(b.dataset.t)); $$('#orbitMoments .btn').forEach(x => x.classList.toggle('on', x === b)); }));
+  $('#orbitAuto').addEventListener('click', () => { oAuto = !oAuto; $('#orbitAuto').classList.toggle('on', oAuto); if (oAuto && !oPlaying) orbitPlayPause(true); });
+  $('#orbitReset').addEventListener('click', () => { oZoom = 1; oVids.forEach(v => { v.style.transform = ''; }); orbitShow(0, true); });
+  $('#orbitFs').addEventListener('click', () => {
+    if (document.fullscreenElement || document.webkitFullscreenElement) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    if (stage.requestFullscreen) stage.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+  });
+  // pointer: horizontal drag = rotate (28 px per 10 deg), two-finger pinch = zoom
+  const ptrs = new Map(); let dragX = 0, dragAcc = 0, pinch0 = 0, zoom0 = 1;
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.ctl')) return;
+    stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, e); stage.classList.add('touched');
+    if (ptrs.size === 1) { dragX = e.clientX; dragAcc = 0; }
+    else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); zoom0 = oZoom; }
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, e);
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); oZoom = Math.max(1, Math.min(2.5, zoom0 * d / pinch0)); if (oCur) oCur.style.transform = `scale(${oZoom})`; return; }
+    const dx = e.clientX - dragX; dragX = e.clientX; dragAcc += dx;
+    const stepPx = 28; while (Math.abs(dragAcc) >= stepPx) { orbitShow(oi + (dragAcc > 0 ? -1 : 1)); dragAcc -= Math.sign(dragAcc) * stepPx; }
+  });
+  const ptrUp = (e) => { ptrs.delete(e.pointerId); };
+  stage.addEventListener('pointerup', ptrUp); stage.addEventListener('pointercancel', ptrUp);
+  stage.addEventListener('dblclick', () => { oZoom = 1; if (oCur) oCur.style.transform = ''; });
+  stage.addEventListener('wheel', (e) => { e.preventDefault(); orbitShow(oi + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
+  document.addEventListener('keydown', (e) => {
+    if (!$('#orbit').classList.contains('on')) return;
+    if (e.key === 'ArrowLeft') orbitShow(oi - 1); else if (e.key === 'ArrowRight') orbitShow(oi + 1);
+    else if (e.code === 'Space') { e.preventDefault(); orbitPlayPause(!oPlaying); }
+    else if (e.key === 'ArrowUp') { orbitPlayPause(false); orbitSetTime(ot + 1 / ORBIT.fps); } else if (e.key === 'ArrowDown') { orbitPlayPause(false); orbitSetTime(ot - 1 / ORBIT.fps); }
+  });
+
+  // deep link: #space / #cams / #film / #orbit
   const h = location.hash.replace('#', '');
-  if (['cams', 'space', 'film'].includes(h)) go(h);
+  if (['cams', 'space', 'film', 'orbit'].includes(h)) go(h);
 })();
 </script>
 </body>

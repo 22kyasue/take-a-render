@@ -113,6 +113,49 @@
   #orbit .moments { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   #orbit .moments .btn i { font-style: normal; font-family: var(--mono); color: var(--txt-3); margin-right: 5px; font-size: 10.5px; }
   footer { color: var(--txt-3); font-size: 11px; margin-top: 40px; line-height: 1.7; }
+
+  /* ---- rotate prompt: iOS-style notification shown on portrait phones / tablets ---- */
+  #rotate { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; width: min(calc(100% - 20px), 420px); z-index: 60;
+    transform: translate(-50%, calc(-100% - 40px)); opacity: 0; pointer-events: none; will-change: transform, opacity;
+    transition: transform .55s cubic-bezier(.2,.9,.25,1.12), opacity .35s ease; touch-action: none; }
+  #rotate.in { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  #rotate.out { transform: translate(-50%, calc(-100% - 40px)); opacity: 0; transition: transform .38s cubic-bezier(.4,0,.8,.4), opacity .3s ease; }
+  #rotate .card { position: relative; display: grid; grid-template-columns: 40px 1fr 56px; gap: 12px; align-items: center; padding: 13px 14px 14px;
+    border-radius: 24px; background: rgba(28,30,36,.84); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 14px 44px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.08) inset;
+    -webkit-backdrop-filter: blur(34px) saturate(180%); backdrop-filter: blur(34px) saturate(180%); color: #f2f4f8; font-family: "Noto Sans JP", -apple-system, "SF Pro Text", "Hiragino Sans", sans-serif; }
+  #rotate .app { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(160deg, #35d392, #17a86c); color: #04120b; font-weight: 800; font-size: 15px; letter-spacing: .02em; box-shadow: 0 2px 8px rgba(53,211,146,.35); line-height: 1; }
+  #rotate .app small { display: block; font-size: 6.5px; letter-spacing: .18em; line-height: 1; margin-top: 2px; opacity: .8; }
+  #rotate .txt { min-width: 0; }
+  #rotate .hdr { display: flex; align-items: baseline; gap: 8px; }
+  #rotate .hdr b { font-size: 15px; font-weight: 700; letter-spacing: .01em; }
+  #rotate .hdr time { margin-left: auto; font-size: 12px; color: rgba(235,238,245,.55); flex: none; }
+  #rotate p { margin: 3px 0 0; font-size: 13px; line-height: 1.55; color: rgba(235,238,245,.82); }
+  #rotate p.hint { color: rgba(235,238,245,.55); font-size: 11.5px; margin-top: 4px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .4s ease, opacity .4s ease; }
+  #rotate.hint p.hint { max-height: 40px; opacity: 1; }
+  #rotate .grab { position: absolute; left: 50%; bottom: 5px; width: 34px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.22); transform: translateX(-50%); }
+  /* the rotating phone glyph */
+  #rotate .glyph { width: 56px; height: 56px; position: relative; display: grid; place-items: center; }
+  #rotate .glyph svg { width: 56px; height: 56px; overflow: visible; }
+  #rotate .phone { transform-origin: 28px 28px; animation: rot-phone 3.2s cubic-bezier(.65,0,.35,1) infinite; }
+  #rotate .screen { fill: rgba(255,255,255,.08); animation: rot-screen 3.2s ease infinite; }
+  #rotate .arc { fill: none; stroke: #35d392; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 60; stroke-dashoffset: 60; animation: rot-arc 3.2s ease infinite; }
+  #rotate .arrow { fill: #35d392; opacity: 0; animation: rot-arrow 3.2s ease infinite; }
+  @keyframes rot-phone { 0%, 18% { transform: rotate(0deg); } 52%, 82% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+  @keyframes rot-screen { 0%, 40% { fill: rgba(255,255,255,.08); } 55%, 82% { fill: rgba(53,211,146,.55); } 100% { fill: rgba(255,255,255,.08); } }
+  @keyframes rot-arc { 0%, 12% { stroke-dashoffset: 60; opacity: 0; } 18% { opacity: 1; } 52% { stroke-dashoffset: 0; opacity: 1; } 82% { stroke-dashoffset: 0; opacity: 1; } 92%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+  @keyframes rot-arrow { 0%, 46% { opacity: 0; } 52%, 82% { opacity: 1; } 90%, 100% { opacity: 0; } }
+  /* success state once the device is landscape */
+  #rotate.ok .phone, #rotate.ok .arc, #rotate.ok .arrow { animation: none; }
+  #rotate.ok .phone { transform: rotate(-90deg); } #rotate.ok .screen { animation: none; fill: rgba(53,211,146,.55); }
+  #rotate.ok .arc, #rotate.ok .arrow { opacity: 0; }
+  #rotate .check { fill: none; stroke: #35d392; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; opacity: 0; }
+  #rotate.ok .check { animation: rot-check .45s cubic-bezier(.3,.7,.2,1) .1s forwards; }
+  @keyframes rot-check { from { stroke-dashoffset: 30; opacity: 1; } to { stroke-dashoffset: 0; opacity: 1; } }
+  #rotate.ok .app { background: linear-gradient(160deg, #3be09f, #1fbf7e); }
+  @media (prefers-reduced-motion: reduce) {
+    #rotate, #rotate.out { transition: opacity .25s ease; transform: translate(-50%, 0); }
+    #rotate .phone { animation-duration: 6s; } #rotate .arc, #rotate .arrow { animation: none; opacity: 0; }
+  }
   @media (max-width: 760px) {
     .steps { grid-template-columns: 1fr; } .cams { grid-template-columns: 1fr; } nav .meta { display: none; }
     .wrap { padding: 14px 10px 40px; } h1 { font-size: 18px; } #time { min-width: 0; } .hide-sm { display: none; }
@@ -256,13 +299,38 @@
   </div>
 </section>
 <div id="lightbox"><img alt=""></div>
+<div id="rotate" role="status" aria-live="polite" hidden>
+  <div class="card">
+    <div class="app">C<small>AI</small></div>
+    <div class="txt">
+      <div class="hdr"><b id="rotateTitle">スマホを横にしてください</b><time id="rotateTime">今</time></div>
+      <p id="rotateBody">横向きにすると、3D 空間と映像が画面いっぱいに広がります。</p>
+      <p class="hint">回転しない場合は、画面の回転ロックを解除してください。</p>
+    </div>
+    <div class="glyph" aria-hidden="true">
+      <svg viewBox="0 0 56 56">
+        <path class="arc" d="M 45 14 A 22 22 0 0 1 49 33" />
+        <path class="arrow" d="M 44 30 L 50.5 36.5 L 53 27.5 Z" />
+        <g class="phone">
+          <rect x="18" y="9" width="20" height="38" rx="4.5" fill="rgba(255,255,255,.06)" stroke="#f2f4f8" stroke-width="2" />
+          <rect class="screen" x="21" y="14" width="14" height="26" rx="1.5" />
+          <circle cx="28" cy="43.5" r="1.3" fill="#f2f4f8" opacity=".7" />
+        </g>
+        <path class="check" d="M 19 29 L 25.5 35.5 L 38 22" />
+      </svg>
+    </div>
+    <div class="grab"></div>
+  </div>
+</div>
 
 <script>
 (() => {
   const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
   // ---------- chapters ----------
   const frame = $('#spaceFrame');
+  let currentChapter = 'intro';
   function go(ch) {
+    currentChapter = ch;
     $$('.chapter, #space').forEach(el => el.classList.toggle('on', el.id === ch));
     $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.ch === ch));
     if (ch === 'space' && !frame.src) frame.src = frame.dataset.src;
@@ -271,6 +339,7 @@
     if (ch === 'orbit') orbitInit(); else if (window.orbitPause) window.orbitPause();
     history.replaceState(null, '', '#' + ch);
     window.scrollTo(0, 0);
+    if (typeof rotateCheck === 'function') rotateCheck();
   }
   $$('.tab, [data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.ch || b.dataset.go)));
   $('#spaceFs').addEventListener('click', () => {
@@ -439,9 +508,69 @@
     else if (e.key === 'ArrowUp') { orbitPlayPause(false); orbitSetTime(ot + 1 / ORBIT.fps); } else if (e.key === 'ArrowDown') { orbitPlayPause(false); orbitSetTime(ot - 1 / ORBIT.fps); }
   });
 
+
+  // ---------- rotate prompt (portrait phones / tablets on the wide-screen chapters) ----------
+  const rotate = $('#rotate'), rotateTitle = $('#rotateTitle'), rotateBody = $('#rotateBody');
+  const mqPortrait = matchMedia('(orientation: portrait)');
+  const touchDevice = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 1 || /iPhone|iPad|Android/i.test(navigator.userAgent);
+  const isPortrait = () => innerHeight > innerWidth;
+  let rotateShown = false, rotateDismissed = false, rotateTimer = 0, hintTimer = 0, okTimer = 0;
+  function rotateShow() {
+    if (rotateShown) return;
+    clearTimeout(rotateTimer);
+    rotate.hidden = false; rotate.classList.remove('out', 'ok', 'hint');
+    rotateTitle.textContent = 'スマホを横にしてください';
+    rotateBody.textContent = currentChapter === 'space' ? '横向きにすると、3D 空間が画面いっぱいに広がります。' : '横向きにすると、Unreal 映像が画面いっぱいに広がります。';
+    $('#rotateTime').textContent = '今';
+    requestAnimationFrame(() => requestAnimationFrame(() => rotate.classList.add('in')));
+    rotateShown = true;
+    if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+    clearTimeout(hintTimer); hintTimer = setTimeout(() => { if (rotateShown && isPortrait()) rotate.classList.add('hint'); }, 7000);
+  }
+  function rotateHide(delay) {
+    if (!rotateShown) return;
+    clearTimeout(hintTimer); clearTimeout(rotateTimer);
+    rotateShown = false;
+    rotateTimer = setTimeout(() => {
+      rotate.classList.remove('in'); rotate.classList.add('out');
+      setTimeout(() => { if (!rotateShown) { rotate.hidden = true; rotate.classList.remove('out', 'ok', 'hint'); } }, 420);
+    }, delay || 0);
+  }
+  function rotateSuccess() {
+    if (!rotateShown || rotate.classList.contains('ok')) return;
+    rotate.classList.add('ok'); rotate.classList.remove('hint');
+    rotateTitle.textContent = '横向きになりました';
+    rotateBody.textContent = 'そのままお楽しみください。';
+    if (navigator.vibrate) { try { navigator.vibrate([6, 30, 6]); } catch (e) {} }
+    rotateHide(2200);
+  }
+  function rotateCheck() {
+    const wants = touchDevice && (currentChapter === 'space' || currentChapter === 'film' || currentChapter === 'orbit');
+    clearTimeout(okTimer);
+    if (!wants) { rotateHide(); return; }
+    if (isPortrait()) {
+      if (!rotateDismissed && !rotateShown) okTimer = setTimeout(rotateShow, 500);
+    } else {
+      rotateDismissed = false;            // a real rotation resets the dismissal
+      if (rotateShown) rotateSuccess();
+    }
+  }
+  window.rotateCheck = rotateCheck;
+  const onOrient = () => setTimeout(rotateCheck, 120);
+  if (mqPortrait.addEventListener) mqPortrait.addEventListener('change', onOrient); else mqPortrait.addListener(onOrient);
+  if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', onOrient);
+  window.addEventListener('orientationchange', () => setTimeout(rotateCheck, 250));
+  let resizeT = 0; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(rotateCheck, 150); });
+  // swipe up or tap dismisses, like an iOS banner; it comes back after the next real rotation
+  let swipeY = null;
+  rotate.addEventListener('touchstart', e => { swipeY = e.touches[0].clientY; }, { passive: true });
+  rotate.addEventListener('touchmove', e => { if (swipeY !== null && swipeY - e.touches[0].clientY > 28) { swipeY = null; rotateDismissed = true; rotateHide(); } }, { passive: true });
+  rotate.addEventListener('touchend', () => { swipeY = null; }, { passive: true });
+  rotate.addEventListener('click', () => { rotateDismissed = true; rotateHide(); });
+
   // deep link: #space / #cams / #film / #orbit
   const h = location.hash.replace('#', '');
-  if (['cams', 'space', 'film', 'orbit'].includes(h)) go(h);
+  if (['cams', 'space', 'film', 'orbit'].includes(h)) go(h); else rotateCheck();
 })();
 </script>
 </body>

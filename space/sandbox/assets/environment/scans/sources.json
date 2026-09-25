@@ -1,0 +1,128 @@
+[
+  {
+    "name": "grey_plaster-Diffuse.jpg",
+    "asset": "grey_plaster",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/grey_plaster/grey_plaster_diff_2k.jpg",
+    "md5": "42190a8b8a5b2749c0d7e3a7354abfc8",
+    "license": "CC0"
+  },
+  {
+    "name": "grey_plaster-nor_gl.jpg",
+    "asset": "grey_plaster",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/grey_plaster/grey_plaster_nor_gl_2k.jpg",
+    "md5": "0e39fd7528254ef19b8bad195d52514e",
+    "license": "CC0"
+  },
+  {
+    "name": "grey_plaster-Rough.jpg",
+    "asset": "grey_plaster",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/grey_plaster/grey_plaster_rough_2k.jpg",
+    "md5": "1069c5716725c851374e13d08d320cc1",
+    "license": "CC0"
+  },
+  {
+    "name": "concrete_floor-Diffuse.jpg",
+    "asset": "concrete_floor",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor/concrete_floor_diff_2k.jpg",
+    "md5": "b31fcf4f48ca62a0c36ecd0e5b0d47de",
+    "license": "CC0"
+  },
+  {
+    "name": "concrete_floor-nor_gl.jpg",
+    "asset": "concrete_floor",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor/concrete_floor_nor_gl_2k.jpg",
+    "md5": "ba454704131c331e9d05008a66a44001",
+    "license": "CC0"
+  },
+  {
+    "name": "concrete_floor-Rough.jpg",
+    "asset": "concrete_floor",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_floor/concrete_floor_rough_2k.jpg",
+    "md5": "410af2794fbdbcd8b4f0e41a653edc63",
+    "license": "CC0"
+  },
+  {
+    "name": "wood_table_001-Diffuse.jpg",
+    "asset": "wood_table_001",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/wood_table_001/wood_table_001_diff_2k.jpg",
+    "md5": "a36483628b915dabf82961ab2a62a85c",
+    "license": "CC0"
+  },
+  {
+    "name": "wood_table_001-nor_gl.jpg",
+    "asset": "wood_table_001",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/wood_table_001/wood_table_001_nor_gl_2k.jpg",
+    "md5": "50dbc9fe086df00f6bce819eae6091d1",
+    "license": "CC0"
+  },
+  {
+    "name": "wood_table_001-Rough.jpg",
+    "asset": "wood_table_001",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/wood_table_001/wood_table_001_rough_2k.jpg",
+    "md5": "a291ec6bc35b9827175cdd1592c62e03",
+    "license": "CC0"
+  },
+  {
+    "name": "metal_plate-Diffuse.jpg",
+    "asset": "metal_plate",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_diff_2k.jpg",
+    "md5": "91b841e7e619e55588f0183a703fb644",
+    "license": "CC0"
+  },
+  {
+    "name": "metal_plate-nor_gl.jpg",
+    "asset": "metal_plate",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_nor_gl_2k.jpg",
+    "md5": "797c3f3de91da0c03f44f493576e158e",
+    "license": "CC0"
+  },
+  {
+    "name": "metal_plate-Rough.jpg",
+    "asset": "metal_plate",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_rough_2k.jpg",
+    "md5": "b2c2bfc0a5e46c1a8bdfddd236daa200",
+    "license": "CC0"
+  },
+  {
+    "name": "leafy_grass-Diffuse.jpg",
+    "asset": "leafy_grass",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_diff_2k.jpg",
+    "md5": "8014f4dace676a62ed71b3dd76119dae",
+    "license": "CC0"
+  },
+  {
+    "name": "leafy_grass-nor_gl.jpg",
+    "asset": "leafy_grass",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_nor_gl_2k.jpg",
+    "md5": "ea5e91abe01dc5e5d7028c68c3bc9194",
+    "license": "CC0"
+  },
+  {
+    "name": "leafy_grass-Rough.jpg",
+    "asset": "leafy_grass",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_rough_2k.jpg",
+    "md5": "b5c551ed91162aab5afbfb03b73ae3f5",
+    "license": "CC0"
+  },
+  {
+    "name": "oak_wood_planks-Diffuse.jpg",
+    "asset": "oak_wood_planks",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/oak_wood_planks/oak_wood_planks_diff_2k.jpg",
+    "md5": "740160778f1c4b78bac74d96fe3c06ea",
+    "license": "CC0"
+  },
+  {
+    "name": "oak_wood_planks-nor_gl.jpg",
+    "asset": "oak_wood_planks",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/oak_wood_planks/oak_wood_planks_nor_gl_2k.jpg",
+    "md5": "7291b28d1aa5e0002d93b4d419268e98",
+    "license": "CC0"
+  },
+  {
+    "name": "oak_wood_planks-Rough.jpg",
+    "asset": "oak_wood_planks",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/oak_wood_planks/oak_wood_planks_rough_2k.jpg",
+    "md5": "d7533fb12d5c296917ff6fb169bb282b",
+    "license": "CC0"
+  }
+]

@@ -4,276 +4,313 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Take A — Unreal Engine 5 レンダリング | Clutch AI</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#07090d">
+<title>Take A — 4 台のカメラから 3D 空間へ | Clutch AI</title>
 <link rel="icon" href="poster.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<meta property="og:title" content="Take A — Unreal Engine 5 レンダリング">
-<meta property="og:description" content="フットサルの1プレーを3D再構成し、Unreal Engine 5 で木の体育館に再現した5秒の映像。">
+<meta property="og:title" content="Take A — 4 台のカメラから 3D 空間へ">
+<meta property="og:description" content="フットサルの 1 プレーを 4 台のカメラから 3D 再構成。iPad で自由に動き回れる 3D 空間と、Unreal Engine 5 のシネマティック映像。">
 <meta property="og:image" content="poster.jpg">
 <style>
   :root {
-    --bg: #07090d; --panel: #0e121a; --line: #1d2330; --line-soft: rgba(255,255,255,0.07);
-    --txt: #e7eaf0; --txt-2: #98a1b3; --txt-3: #5c6575; --accent: #35d392; --blue: #3e7bfa;
-    --mono: "JetBrains Mono", "Consolas", monospace;
+    --bg: #07090d; --panel: #0e121a; --line: #1d2330; --txt: #e7eaf0; --txt-2: #98a1b3; --txt-3: #5c6575;
+    --accent: #35d392; --mono: "JetBrains Mono", "Consolas", monospace; --nav: 56px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--txt); font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", sans-serif; }
   a { color: var(--accent); text-decoration: none; }
-  header { display: flex; align-items: center; gap: 18px; padding: 14px 22px; border-bottom: 1px solid var(--line); background: rgba(8,10,15,.92); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); }
-  #brand { font-size: 15px; font-weight: 800; letter-spacing: .05em; line-height: 1.1; }
+  /* ---- nav ---- */
+  nav { position: fixed; top: 0; left: 0; right: 0; height: var(--nav); z-index: 30; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: rgba(8,10,15,.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(10px); padding-top: env(safe-area-inset-top); }
+  #brand { font-size: 14px; font-weight: 800; letter-spacing: .05em; line-height: 1.1; white-space: nowrap; }
   #brand span { color: var(--accent); }
-  #brand small { display: block; color: var(--txt-3); font-size: 8.5px; letter-spacing: .24em; font-weight: 600; }
-  header .spacer { flex: 1; }
-  header .meta { font-family: var(--mono); color: var(--txt-3); font-size: 11px; }
-  main { max-width: 1280px; margin: 0 auto; padding: 22px 18px 60px; }
-  h1 { font-size: 22px; margin: 0 0 6px; font-weight: 800; letter-spacing: .01em; }
-  .sub { color: var(--txt-2); font-size: 13px; margin: 0 0 16px; line-height: 1.6; }
-
-  /* ---- player ---- */
+  #brand small { display: block; color: var(--txt-3); font-size: 8px; letter-spacing: .24em; font-weight: 600; }
+  .tabs { display: flex; gap: 4px; margin-left: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { background: transparent; border: 1px solid transparent; color: var(--txt-2); border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .tab i { font-style: normal; font-family: var(--mono); font-size: 10px; color: var(--txt-3); border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px; }
+  .tab.on { color: var(--txt); background: rgba(53,211,146,.1); border-color: rgba(53,211,146,.45); }
+  .tab.on i { color: var(--accent); border-color: rgba(53,211,146,.45); }
+  nav .spacer { flex: 1; }
+  nav .meta { font-family: var(--mono); color: var(--txt-3); font-size: 11px; white-space: nowrap; }
+  /* ---- chapters ---- */
+  .chapter { display: none; padding-top: var(--nav); min-height: 100dvh; }
+  .chapter.on { display: block; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 22px 18px 60px; }
+  h1 { font-size: 22px; margin: 0 0 6px; font-weight: 800; }
+  .sub { color: var(--txt-2); font-size: 13.5px; margin: 0 0 16px; line-height: 1.7; }
+  .kbd { font-family: var(--mono); font-size: 10.5px; color: var(--txt-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; background: rgba(255,255,255,.03); }
+  .btn { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: var(--txt); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; line-height: 1; transition: all .12s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: rgba(255,255,255,.14); }
+  .btn.on { color: var(--accent); border-color: rgba(53,211,146,.55); background: rgba(53,211,146,.1); }
+  .btn.icon { font-size: 15px; padding: 6px 9px; min-width: 34px; justify-content: center; }
+  .btn.primary { background: var(--accent); color: #041; border-color: var(--accent); font-weight: 800; }
+  .seg { display: inline-flex; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; overflow: hidden; }
+  .seg .btn { border: 0; border-radius: 0; } .seg .btn + .btn { border-left: 1px solid rgba(255,255,255,.14); }
+  .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .row .spacer { flex: 1; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .card p { margin: 0 0 8px; color: var(--txt-2); font-size: 13px; line-height: 1.75; } .card b { color: var(--txt); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 22px; }
+  .step { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color .15s; }
+  .step:hover { border-color: rgba(53,211,146,.45); }
+  .step .n { font-family: var(--mono); color: var(--accent); font-size: 11px; letter-spacing: .12em; }
+  .step h3 { margin: 6px 0 4px; font-size: 15px; } .step p { margin: 0; color: var(--txt-2); font-size: 12.5px; line-height: 1.6; }
+  /* ---- chapter 1: 4 cams ---- */
+  .cams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cam { position: relative; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 16 / 9; }
+  .cam video { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .cam .lbl { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,.65); color: #fff; font-size: 11.5px; font-weight: 700; padding: 4px 9px; border-radius: 6px; font-family: var(--mono); letter-spacing: .06em; }
+  .cam .lbl b { color: var(--accent); margin-right: 6px; }
+  .transport { margin-top: 12px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,.18); outline: none; cursor: pointer; margin: 0 0 8px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 2px solid #041; box-shadow: 0 0 0 3px rgba(53,211,146,.25); }
+  input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 2px solid #041; }
+  .mono { font-family: var(--mono); font-size: 12px; color: var(--txt); }
+  /* ---- chapter 2: 3D space ---- */
+  #space { display: none; padding-top: var(--nav); height: 100dvh; }
+  #space.on { display: flex; flex-direction: column; }
+  #space .bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+  #space .bar .tip { color: var(--txt-2); font-size: 12px; line-height: 1.5; }
+  #space iframe { flex: 1; width: 100%; border: 0; background: #000; }
+  /* ---- chapter 3: film player (from the earlier page) ---- */
   #player { position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 16 / 9; user-select: none; }
   #player video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #000; }
   #vB { clip-path: inset(0 0 0 50%); }
-  #wipe { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,.9); transform: translateX(-1px); display: none; cursor: ew-resize; z-index: 3; }
+  #wipe { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,.9); transform: translateX(-1px); display: none; cursor: ew-resize; z-index: 3; touch-action: none; }
   #wipe::after { content: "◀ ▶"; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,.65); color: #fff; font-size: 11px; padding: 6px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); white-space: nowrap; }
   #player.compare #vB { display: block; } #player:not(.compare) #vB { display: none; }
   #player.compare #wipe { display: block; }
   .tag { position: absolute; top: 12px; padding: 4px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: .06em; background: rgba(0,0,0,.6); color: #fff; z-index: 3; pointer-events: none; display: none; }
-  #tagA { left: 12px; } #tagB { right: 12px; }
-  #player.compare .tag { display: block; }
+  #tagA { left: 12px; } #tagB { right: 12px; } #player.compare .tag { display: block; }
   #bigplay { position: absolute; inset: 0; display: grid; place-items: center; z-index: 4; cursor: pointer; }
-  #bigplay i { width: 82px; height: 82px; border-radius: 50%; background: rgba(53,211,146,.92); display: grid; place-items: center; color: #041; font-size: 34px; box-shadow: 0 10px 40px rgba(0,0,0,.5); transition: transform .15s; }
-  #bigplay:hover i { transform: scale(1.06); }
+  #bigplay i { width: 82px; height: 82px; border-radius: 50%; background: rgba(53,211,146,.92); display: grid; place-items: center; color: #041; font-size: 34px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
   #player.playing #bigplay { display: none; }
-
-  /* ---- controls ---- */
-  #controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 10px 12px 10px; background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,0)); opacity: 1; transition: opacity .25s; }
+  #controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 10px 12px; background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,0)); transition: opacity .25s; }
   #player.playing:not(:hover) #controls { opacity: 0; }
   #player:fullscreen #controls, #player:-webkit-full-screen #controls { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-  #scrub { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); outline: none; cursor: pointer; margin: 0 0 8px; }
-  #scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 2px solid #041; box-shadow: 0 0 0 3px rgba(53,211,146,.25); }
-  #scrub::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 2px solid #041; }
-  .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .row .spacer { flex: 1; }
-  .btn { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: var(--txt); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-family: inherit; line-height: 1; transition: all .12s; }
-  .btn:hover { background: rgba(255,255,255,.14); }
-  .btn.on { color: var(--accent); border-color: rgba(53,211,146,.55); background: rgba(53,211,146,.1); }
-  .btn.icon { font-size: 15px; padding: 5px 9px; min-width: 34px; text-align: center; }
-  .seg { display: inline-flex; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; overflow: hidden; }
-  .seg .btn { border: 0; border-radius: 0; }
-  .seg .btn + .btn { border-left: 1px solid rgba(255,255,255,.14); }
-  #time { font-family: var(--mono); font-size: 12px; color: var(--txt); min-width: 150px; text-align: center; }
-  #time b { color: var(--accent); font-weight: 600; }
+  #time { font-family: var(--mono); font-size: 12px; color: var(--txt); min-width: 150px; text-align: center; } #time b { color: var(--accent); font-weight: 600; }
   #frame { font-family: var(--mono); font-size: 11px; color: var(--txt-2); }
-
-  /* ---- below ---- */
-  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0 0; }
-  .bar .hint { color: var(--txt-3); font-size: 11px; font-family: var(--mono); }
-  .kbd { font-family: var(--mono); font-size: 10.5px; color: var(--txt-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; background: rgba(255,255,255,.03); }
-  section { margin-top: 34px; }
-  h2 { font-size: 15px; font-weight: 800; letter-spacing: .04em; color: var(--txt); margin: 0 0 10px; display: flex; align-items: center; gap: 10px; }
-  h2::before { content: ""; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-  .card p { margin: 0 0 8px; color: var(--txt-2); font-size: 13px; line-height: 1.75; }
-  .card ul { margin: 6px 0 0; padding-left: 18px; color: var(--txt-2); font-size: 13px; line-height: 1.8; }
-  .card b { color: var(--txt); }
-  figure { margin: 0; }
-  figure img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); cursor: zoom-in; }
+  figure { margin: 16px 0 0; } figure img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); cursor: zoom-in; }
   figcaption { color: var(--txt-3); font-size: 11.5px; margin: 8px 0 0; font-family: var(--mono); }
   #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.94); z-index: 50; display: none; place-items: center; cursor: zoom-out; padding: 20px; }
-  #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
-  #lightbox.open { display: grid; }
+  #lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; } #lightbox.open { display: grid; }
   footer { color: var(--txt-3); font-size: 11px; margin-top: 40px; line-height: 1.7; }
-  @media (max-width: 640px) {
-    header { padding: 10px 14px; } main { padding: 14px 10px 40px; } h1 { font-size: 18px; }
-    #time { min-width: 0; } .btn { padding: 7px 9px; } #player { border-radius: 8px; }
-    .hide-sm { display: none; }
+  @media (max-width: 760px) {
+    .steps { grid-template-columns: 1fr; } .cams { grid-template-columns: 1fr; } nav .meta { display: none; }
+    .wrap { padding: 14px 10px 40px; } h1 { font-size: 18px; } #time { min-width: 0; } .hide-sm { display: none; }
   }
 </style>
 </head>
 <body>
-<header>
-  <div id="brand">CLUTCH <span>AI</span><small>FUTSAL STUDIO / RENDER</small></div>
+<nav>
+  <div id="brand">CLUTCH <span>AI</span><small>FUTSAL STUDIO</small></div>
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-ch="intro" role="tab"><i>00</i>はじめに</button>
+    <button class="tab" data-ch="cams" role="tab"><i>01</i>4 台のカメラ</button>
+    <button class="tab" data-ch="space" role="tab"><i>02</i>3D で動き回る</button>
+    <button class="tab" data-ch="film" role="tab"><i>03</i>Unreal 映像</button>
+  </div>
   <div class="spacer"></div>
-  <div class="meta hide-sm">UE 5.8 · 1920×1080 · 30fps · 150f · 5.00s</div>
-</header>
+  <div class="meta">MORIOKA / TAKE A</div>
+</nav>
 
-<main>
-  <h1>Take A — Unreal Engine 5 レンダリング</h1>
-  <p class="sub">4 台のカメラで撮った 1 プレーを 3D 再構成し、Unreal Engine 5 の木の体育館で再生したものです。元データの 3.0〜8.0 秒、150 フレーム。<br class="hide-sm">
-  スペースで再生、<span class="kbd">←</span><span class="kbd">→</span> でコマ送り、<span class="kbd">F</span> で全画面、<span class="kbd">C</span> で新旧比較。</p>
+<!-- 00 intro -->
+<section class="chapter on" id="intro">
+  <div class="wrap">
+    <h1>4 台のカメラから、自由に動き回れる 3D 空間へ</h1>
+    <p class="sub">体育館に置いた 4 台の固定カメラで撮った 1 プレー(Take A、8 秒)を、2 人の選手の関節位置として 3D に再構成しました。<br class="hide-sm">できあがった空間は iPad の指で好きな角度から見られ、同じデータを Unreal Engine 5 で映像にもしています。</p>
+    <div class="steps">
+      <div class="step" data-go="cams"><div class="n">01 / SOURCE</div><h3>4 台のカメラ映像</h3><p>西側・ゴール裏・東側・サイド。同じ瞬間を 4 方向から同期再生。</p></div>
+      <div class="step" data-go="space"><div class="n">02 / SPACE</div><h3>3D で動き回る</h3><p>指で回転、ピンチでズーム。カメラ配置・選手に寄る・真上など視点をワンタップで切替。</p></div>
+      <div class="step" data-go="film"><div class="n">03 / FILM</div><h3>Unreal Engine 5 映像</h3><p>同じ動きを木の体育館でレンダリング。新旧の比較とスロー再生。</p></div>
+    </div>
+    <div class="row"><button class="btn primary" data-go="space">3D 空間を開く →</button><button class="btn" data-go="cams">まず 4 台の映像を見る</button></div>
+  </div>
+</section>
 
-  <div id="player" tabindex="0" aria-label="video player">
-    <video id="vA" src="gymv2.mp4" poster="poster.jpg" playsinline preload="auto" loop muted></video>
-    <video id="vB" src="gym.mp4" playsinline preload="auto" loop muted></video>
-    <div id="wipe"></div>
-    <div class="tag" id="tagA">A · 新（GymV2）</div>
-    <div class="tag" id="tagB">B · 旧（Gym）</div>
-    <div id="bigplay" title="再生"><i>▶</i></div>
-    <div id="controls">
-      <input id="scrub" type="range" min="0" max="149" step="1" value="0" aria-label="seek">
+<!-- 01 cams -->
+<section class="chapter" id="cams">
+  <div class="wrap">
+    <h1>01 · 4 台のカメラ映像</h1>
+    <p class="sub">高さ約 1.4〜1.5 m に置いた 4 台の固定カメラ。4 本は同じ時刻に揃えてあり、下のスライダーで同時に動きます。この 4 本から 2 人の関節位置を推定し、次の章の 3D 空間になります。</p>
+    <div class="cams">
+      <div class="cam"><video src="space/cam1_west.mp4" muted playsinline preload="metadata"></video><div class="lbl"><b>01</b>西側</div></div>
+      <div class="cam"><video src="space/cam2_goalback.mp4" muted playsinline preload="metadata"></video><div class="lbl"><b>02</b>ゴール裏</div></div>
+      <div class="cam"><video src="space/cam3_east.mp4" muted playsinline preload="metadata"></video><div class="lbl"><b>03</b>東側</div></div>
+      <div class="cam"><video src="space/cam4_side.mp4" muted playsinline preload="metadata"></video><div class="lbl"><b>04</b>サイド</div></div>
+    </div>
+    <div class="transport">
+      <input id="camSeek" type="range" min="0" max="8" step="0.033" value="0" aria-label="4 台の映像の再生位置">
       <div class="row">
-        <button class="btn icon" id="play" title="再生 / 停止 (Space)">▶</button>
-        <button class="btn icon" id="prev" title="1 コマ戻る (←)">⏮</button>
-        <button class="btn icon" id="next" title="1 コマ進む (→)">⏭</button>
-        <div id="time"><b>0.00</b> / 5.00 s</div>
-        <div id="frame">frame 000</div>
+        <button class="btn icon" id="camPlay" title="再生 / 停止">▶</button>
+        <span class="mono" id="camTime">0.00 / 8.00 s</span>
         <div class="spacer"></div>
-        <div class="seg" id="speed">
-          <button class="btn" data-speed="0.25">0.25×</button>
-          <button class="btn" data-speed="0.5">0.5×</button>
-          <button class="btn on" data-speed="1">1×</button>
-        </div>
-        <div class="seg" id="source">
-          <button class="btn on" data-src="A">新</button>
-          <button class="btn" data-src="B">旧</button>
-          <button class="btn" data-src="AB" title="A/B ワイプ比較 (C)">比較</button>
-        </div>
-        <button class="btn" id="loop" title="ループ">ループ</button>
-        <button class="btn icon" id="fs" title="全画面 (F)">⛶</button>
+        <div class="seg" id="camSpeed"><button class="btn" data-speed="0.25">0.25×</button><button class="btn" data-speed="0.5">0.5×</button><button class="btn on" data-speed="1">1×</button></div>
+        <button class="btn" data-go="space">この 4 本から 3D へ →</button>
       </div>
     </div>
   </div>
+</section>
 
+<!-- 02 space -->
+<section id="space">
   <div class="bar">
-    <a class="btn" href="gymv2.mp4" download="take-a-gymv2-5s.mp4">⬇ 新版 MP4 (4.0 MB)</a>
-    <a class="btn" href="gym.mp4" download="take-a-gym-5s.mp4">⬇ 旧版 MP4 (2.6 MB)</a>
-    <span class="hint">クリックで再生 / ダブルクリックで全画面</span>
+    <span class="tip"><b>指で回転</b>するには 3D 画面右上の「指で3Dを回転」を押します。2 本指でピンチするとズーム。下の視点ボタン(カメラ配置・選手に寄る・反対側・真上…)でワンタップ切替。</span>
+    <div class="spacer"></div>
+    <a class="btn" href="space/sandbox/?ball=tracked&playerCandidate=studio" target="_blank" rel="noopener">別タブで全画面 ↗</a>
+    <button class="btn" id="spaceFs">この画面で全画面 ⛶</button>
   </div>
+  <iframe id="spaceFrame" title="3D サンドボックス" allow="fullscreen" allowfullscreen loading="lazy" data-src="space/sandbox/?ball=tracked&playerCandidate=studio"></iframe>
+</section>
 
-  <section>
-    <h2>この映像について</h2>
-    <div class="card">
-      <p><b>動き</b>: 体育館の 4 台の固定カメラ映像から 2 人の関節位置を推定し、Unreal 上で同じ動きをジオメトリキャッシュとして再生しています。ボールの軌道と回転も追跡データから。カメラは既存のブラウザ版と同じ構図です。</p>
-      <p><b>会場（新版）</b>: フットサル 40×20 m の正規ライン、3×2 m ゴール、実物スキャンのオーク板の床、緑の吸音パネル、漆喰の壁、高窓、木の観客席、肋木など。</p>
-      <ul>
-        <li>人物は現段階では動作確認用の単色モデルです（写実的な選手モデルへの置き換えは次段階）。</li>
-        <li>ゴールネットは静止、ボール接触時の変形は未実装です。</li>
-      </ul>
+<!-- 03 film -->
+<section class="chapter" id="film">
+  <div class="wrap">
+    <h1>03 · Unreal Engine 5 レンダリング</h1>
+    <p class="sub">同じ 3D データを Unreal Engine 5.8 の木の体育館で再生した 5 秒の映像(元データの 3.0〜8.0 秒、1920×1080、30fps)。<span class="hide-sm">スペースで再生、<span class="kbd">←</span><span class="kbd">→</span> でコマ送り、<span class="kbd">F</span> で全画面、<span class="kbd">C</span> で新旧比較。</span></p>
+    <div id="player" tabindex="0" aria-label="video player">
+      <video id="vA" src="gymv2.mp4" poster="poster.jpg" playsinline preload="metadata" loop muted></video>
+      <video id="vB" src="gym.mp4" playsinline preload="metadata" loop muted></video>
+      <div id="wipe"></div>
+      <div class="tag" id="tagA">A · 新（GymV2）</div>
+      <div class="tag" id="tagB">B · 旧（Gym）</div>
+      <div id="bigplay" title="再生"><i>▶</i></div>
+      <div id="controls">
+        <input id="scrub" type="range" min="0" max="149" step="1" value="0" aria-label="seek">
+        <div class="row">
+          <button class="btn icon" id="play" title="再生 / 停止 (Space)">▶</button>
+          <button class="btn icon" id="prev" title="1 コマ戻る (←)">⏮</button>
+          <button class="btn icon" id="next" title="1 コマ進む (→)">⏭</button>
+          <div id="time"><b>0.00</b> / 5.00 s</div>
+          <div id="frame">frame 000</div>
+          <div class="spacer"></div>
+          <div class="seg" id="speed"><button class="btn" data-speed="0.25">0.25×</button><button class="btn" data-speed="0.5">0.5×</button><button class="btn on" data-speed="1">1×</button></div>
+          <div class="seg" id="source"><button class="btn on" data-src="A">新</button><button class="btn" data-src="B">旧</button><button class="btn" data-src="AB" title="A/B ワイプ比較 (C)">比較</button></div>
+          <button class="btn" id="loop" title="ループ">ループ</button>
+          <button class="btn icon" id="fs" title="全画面 (F)">⛶</button>
+        </div>
+      </div>
     </div>
-  </section>
-
-  <section>
-    <h2>比較</h2>
-    <figure>
-      <img src="compare-gym-vs-gymv2.jpg" alt="旧 Gym と新 GymV2 の 5 時刻比較" loading="lazy">
-      <figcaption>左: 旧（Gym） / 右: 新（GymV2） — frame 0 / 45 / 90 / 120 / 149</figcaption>
-    </figure>
-    <figure style="margin-top:16px">
-      <img src="compare-browser-vs-unreal.jpg" alt="ブラウザ版参照と Unreal の比較" loading="lazy">
-      <figcaption>左: 既存ブラウザ版の参照キャプチャ / 右: Unreal — 姿勢・位置・ボール・構図の一致確認</figcaption>
-    </figure>
-  </section>
-
-  <footer>© Clutch AI. このページは検索エンジンに登録されません。共有は URL を知っている人に限られます。</footer>
-</main>
+    <div class="row" style="margin-top:12px">
+      <a class="btn" href="gymv2.mp4" download="take-a-gymv2-5s.mp4">⬇ 新版 MP4 (4.0 MB)</a>
+      <a class="btn" href="gym.mp4" download="take-a-gym-5s.mp4">⬇ 旧版 MP4 (2.6 MB)</a>
+    </div>
+    <div class="card" style="margin-top:22px">
+      <p><b>会場(新版)</b>: フットサル 40×20 m の正規ライン、3×2 m ゴール、実物スキャンのオーク板の床、緑の吸音パネル、漆喰の壁、高窓、木の観客席、肋木。</p>
+      <p><b>人物</b>: 映像側は動作確認用の単色モデルです(3D 空間の章では写実的な選手モデルで表示)。ゴールネットは静止、ボール接触時の変形は未実装。</p>
+    </div>
+    <figure><img src="compare-gym-vs-gymv2.jpg" alt="旧 Gym と新 GymV2 の 5 時刻比較" loading="lazy"><figcaption>左: 旧（Gym） / 右: 新（GymV2） — frame 0 / 45 / 90 / 120 / 149</figcaption></figure>
+    <figure><img src="compare-browser-vs-unreal.jpg" alt="ブラウザ版参照と Unreal の比較" loading="lazy"><figcaption>左: 3D 空間(ブラウザ)の参照キャプチャ / 右: Unreal — 姿勢・位置・ボール・構図の一致確認</figcaption></figure>
+    <footer>© Clutch AI. このページは検索エンジンに登録されません。共有は URL を知っている人に限られます。</footer>
+  </div>
+</section>
 <div id="lightbox"><img alt=""></div>
 
 <script>
 (() => {
+  const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+  // ---------- chapters ----------
+  const frame = $('#spaceFrame');
+  function go(ch) {
+    $$('.chapter, #space').forEach(el => el.classList.toggle('on', el.id === ch));
+    $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.ch === ch));
+    if (ch === 'space' && !frame.src) frame.src = frame.dataset.src;
+    if (ch !== 'cams') camPause();
+    if (ch !== 'film') pauseAll();
+    history.replaceState(null, '', '#' + ch);
+    window.scrollTo(0, 0);
+  }
+  $$('.tab, [data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.ch || b.dataset.go)));
+  $('#spaceFs').addEventListener('click', () => {
+    const el = $('#space');
+    if (document.fullscreenElement || document.webkitFullscreenElement) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    if (el.requestFullscreen) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  });
+
+  // ---------- 01: four synced cameras ----------
+  const cams = $$('.cam video'), camSeek = $('#camSeek'), camPlayBtn = $('#camPlay'), camTime = $('#camTime');
+  const camDur = () => cams[0].duration && isFinite(cams[0].duration) ? cams[0].duration : 8;
+  function camPlay() { cams.forEach(v => v.play().catch(() => {})); camPlayBtn.textContent = '❚❚'; }
+  function camPause() { cams.forEach(v => v.pause()); camPlayBtn.textContent = '▶'; }
+  camPlayBtn.addEventListener('click', () => cams[0].paused ? camPlay() : camPause());
+  camSeek.addEventListener('input', () => { camPause(); cams.forEach(v => { v.currentTime = Number(camSeek.value); }); });
+  $$('#camSpeed .btn').forEach(b => b.addEventListener('click', () => { cams.forEach(v => { v.playbackRate = Number(b.dataset.speed); }); $$('#camSpeed .btn').forEach(x => x.classList.toggle('on', x === b)); }));
+  cams[0].addEventListener('timeupdate', () => {
+    camSeek.max = camDur(); camSeek.value = cams[0].currentTime;
+    camTime.textContent = `${cams[0].currentTime.toFixed(2)} / ${camDur().toFixed(2)} s`;
+    cams.slice(1).forEach(v => { if (Math.abs(v.currentTime - cams[0].currentTime) > 0.08) v.currentTime = cams[0].currentTime; });
+  });
+  cams[0].addEventListener('ended', () => { cams.forEach(v => { v.currentTime = 0; }); camPlay(); });
+  $$('.cam').forEach(c => c.addEventListener('click', () => cams[0].paused ? camPlay() : camPause()));
+
+  // ---------- 03: film player ----------
   const FPS = 30, FRAMES = 150, DUR = FRAMES / FPS;
-  const $ = (s) => document.querySelector(s);
   const player = $('#player'), A = $('#vA'), B = $('#vB'), scrub = $('#scrub'), time = $('#time'), frameEl = $('#frame');
   const playBtn = $('#play'), loopBtn = $('#loop'), fsBtn = $('#fs'), wipe = $('#wipe');
-  let mode = 'A', main = A;   // 'A' | 'B' | 'AB'
+  let mode = 'A', main = A;
   const vids = () => mode === 'AB' ? [A, B] : [main];
-  const fmt = (t) => t.toFixed(2);
-
   function setLoop(on) { A.loop = B.loop = on; loopBtn.classList.toggle('on', on); }
   setLoop(true);
-
   function refresh() {
     const t = main.currentTime, f = Math.min(FRAMES - 1, Math.round(t * FPS));
-    scrub.value = f;
-    time.innerHTML = `<b>${fmt(t)}</b> / ${fmt(DUR)} s`;
-    frameEl.textContent = 'frame ' + String(f).padStart(3, '0');
-    player.classList.toggle('playing', !main.paused);
-    playBtn.textContent = main.paused ? '▶' : '❚❚';
+    scrub.value = f; time.innerHTML = `<b>${t.toFixed(2)}</b> / ${DUR.toFixed(2)} s`; frameEl.textContent = 'frame ' + String(f).padStart(3, '0');
+    player.classList.toggle('playing', !main.paused); playBtn.textContent = main.paused ? '▶' : '❚❚';
   }
-  const tick = () => { refresh(); requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
-
+  (function tick() { refresh(); requestAnimationFrame(tick); })();
   function playAll() { vids().forEach(v => v.play().catch(() => {})); }
   function pauseAll() { [A, B].forEach(v => v.pause()); }
   function toggle() { main.paused ? playAll() : pauseAll(); }
-  function seekFrame(f) {
-    f = Math.max(0, Math.min(FRAMES - 1, f));
-    const t = f / FPS + 0.001;
-    [A, B].forEach(v => { v.currentTime = t; });
-    refresh();
-  }
+  function seekFrame(f) { f = Math.max(0, Math.min(FRAMES - 1, f)); [A, B].forEach(v => { v.currentTime = f / FPS + 0.001; }); refresh(); }
   function step(d) { pauseAll(); seekFrame(Math.round(main.currentTime * FPS) + d); }
-
   function setMode(m) {
-    const t = main.currentTime, playing = !main.paused;
-    pauseAll();
+    const t = main.currentTime, playing = !main.paused; pauseAll();
     mode = m; main = (m === 'B') ? B : A;
     player.classList.toggle('compare', m === 'AB');
-    A.style.display = (m === 'B') ? 'none' : 'block';
-    B.style.display = (m === 'A') ? 'none' : 'block';
-    document.querySelectorAll('#source .btn').forEach(b => b.classList.toggle('on', b.dataset.src === m));
-    [A, B].forEach(v => { v.currentTime = t; });
-    if (playing) playAll();
+    A.style.display = (m === 'B') ? 'none' : 'block'; B.style.display = (m === 'A') ? 'none' : 'block';
+    $$('#source .btn').forEach(b => b.classList.toggle('on', b.dataset.src === m));
+    [A, B].forEach(v => { v.currentTime = t; }); if (playing) playAll();
   }
-  function setSpeed(s) {
-    [A, B].forEach(v => { v.playbackRate = s; });
-    document.querySelectorAll('#speed .btn').forEach(b => b.classList.toggle('on', Number(b.dataset.speed) === s));
-  }
+  function setSpeed(s) { [A, B].forEach(v => { v.playbackRate = s; }); $$('#speed .btn').forEach(b => b.classList.toggle('on', Number(b.dataset.speed) === s)); }
   function fullscreen() {
-    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-    if (fsEl) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    if (document.fullscreenElement || document.webkitFullscreenElement) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
     if (player.requestFullscreen) player.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
     else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
-    else if (main.webkitEnterFullscreen) main.webkitEnterFullscreen();   // iOS Safari
+    else if (main.webkitEnterFullscreen) main.webkitEnterFullscreen();
   }
-
-  // wipe divider
   let dragging = false;
-  const setWipe = (clientX) => {
-    const r = player.getBoundingClientRect();
-    const x = Math.max(0.02, Math.min(0.98, (clientX - r.left) / r.width));
-    wipe.style.left = (x * 100) + '%';
-    B.style.clipPath = `inset(0 0 0 ${x * 100}%)`;
-  };
+  const setWipe = (x0) => { const r = player.getBoundingClientRect(); const x = Math.max(.02, Math.min(.98, (x0 - r.left) / r.width)); wipe.style.left = (x * 100) + '%'; B.style.clipPath = `inset(0 0 0 ${x * 100}%)`; };
   wipe.addEventListener('pointerdown', (e) => { dragging = true; wipe.setPointerCapture(e.pointerId); e.stopPropagation(); });
   window.addEventListener('pointermove', (e) => { if (dragging) setWipe(e.clientX); });
   window.addEventListener('pointerup', () => { dragging = false; });
-
-  // wiring
   $('#bigplay').addEventListener('click', playAll);
   player.addEventListener('click', (e) => { if (e.target === A || e.target === B) toggle(); });
   player.addEventListener('dblclick', (e) => { if (e.target === A || e.target === B) fullscreen(); });
-  playBtn.addEventListener('click', toggle);
-  $('#prev').addEventListener('click', () => step(-1));
-  $('#next').addEventListener('click', () => step(1));
-  loopBtn.addEventListener('click', () => setLoop(!A.loop));
-  fsBtn.addEventListener('click', fullscreen);
+  playBtn.addEventListener('click', toggle); $('#prev').addEventListener('click', () => step(-1)); $('#next').addEventListener('click', () => step(1));
+  loopBtn.addEventListener('click', () => setLoop(!A.loop)); fsBtn.addEventListener('click', fullscreen);
   scrub.addEventListener('input', () => { pauseAll(); seekFrame(Number(scrub.value)); });
-  document.querySelectorAll('#speed .btn').forEach(b => b.addEventListener('click', () => setSpeed(Number(b.dataset.speed))));
-  document.querySelectorAll('#source .btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.src)));
-  [A, B].forEach(v => { v.addEventListener('seeked', refresh); v.addEventListener('timeupdate', refresh); v.addEventListener('play', refresh); v.addEventListener('pause', refresh); });
-  // keep B in sync when comparing (drift guard)
+  $$('#speed .btn').forEach(b => b.addEventListener('click', () => setSpeed(Number(b.dataset.speed))));
+  $$('#source .btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.src)));
+  [A, B].forEach(v => ['seeked', 'timeupdate', 'play', 'pause'].forEach(ev => v.addEventListener(ev, refresh)));
   A.addEventListener('timeupdate', () => { if (mode === 'AB' && Math.abs(B.currentTime - A.currentTime) > 0.08) B.currentTime = A.currentTime; });
-
   document.addEventListener('keydown', (e) => {
+    if (!$('#film').classList.contains('on')) return;
     if (e.target.tagName === 'INPUT' && e.target !== scrub) return;
     const k = e.key.toLowerCase();
     if (e.code === 'Space' || k === 'k') { e.preventDefault(); toggle(); }
-    else if (e.key === 'ArrowLeft' || k === ',') { e.preventDefault(); step(-1); }
-    else if (e.key === 'ArrowRight' || k === '.') { e.preventDefault(); step(1); }
-    else if (k === 'f') { fullscreen(); }
-    else if (k === 'c') { setMode(mode === 'AB' ? 'A' : 'AB'); }
-    else if (k === 'l') { setLoop(!A.loop); }
-    else if (k === '1') setSpeed(1); else if (k === '2') setSpeed(0.5); else if (k === '3') setSpeed(0.25);
-    else if (k === 'home') seekFrame(0);
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); } else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+    else if (k === 'f') fullscreen(); else if (k === 'c') setMode(mode === 'AB' ? 'A' : 'AB'); else if (k === 'l') setLoop(!A.loop);
+    else if (k === '1') setSpeed(1); else if (k === '2') setSpeed(.5); else if (k === '3') setSpeed(.25);
   });
-
-  // lightbox for comparison images
   const lb = $('#lightbox'), lbImg = lb.querySelector('img');
-  document.querySelectorAll('figure img').forEach(img => img.addEventListener('click', () => { lbImg.src = img.src; lb.classList.add('open'); }));
+  $$('figure img').forEach(img => img.addEventListener('click', () => { lbImg.src = img.src; lb.classList.add('open'); }));
   lb.addEventListener('click', () => lb.classList.remove('open'));
+  setMode('A');
 
-  setMode('A'); refresh();
+  // deep link: #space / #cams / #film
+  const h = location.hash.replace('#', '');
+  if (['cams', 'space', 'film'].includes(h)) go(h);
 })();
 </script>
 </body>

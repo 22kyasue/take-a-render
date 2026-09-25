@@ -1,0 +1,32 @@
+.coach-panel{position:relative;z-index:7;border-top:1px solid #ffffff16;background:#101c21;padding:18px 20px;color:#edf3f0;--coach-gold:#eed4a1}
+.coach-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.coach-label{display:flex;align-items:center;gap:10px;font:9px ui-monospace,monospace;letter-spacing:.12em;color:#abc0b9}.coach-label strong{font:13px system-ui;letter-spacing:0;color:#eff4f1}
+.coach-modes{display:flex;gap:3px;padding:3px;border:1px solid #ffffff12;border-radius:10px;background:#091217}
+.coach-modes button{min-height:44px;padding:7px 13px;font-size:12px;background:transparent;border:0;color:#aebdbd;border-radius:7px}
+.coach-modes button[aria-pressed=true]{background:#dfebdf!important;color:#17251e!important}
+.coach-card{padding:20px 0 10px;min-height:154px}.coach-meta{display:flex;justify-content:space-between;font:10px ui-monospace,monospace;letter-spacing:.1em;color:var(--coach-gold)}
+.coach-title{font-size:22px;line-height:1.4;margin:10px 0 9px;font-weight:600;letter-spacing:.015em}.coach-copy{font-size:15px;line-height:1.9;margin:0;color:#d7e3df;max-width:64em}
+.coach-navigation{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0 8px}.coach-start{min-height:44px;background:transparent;border:0;color:#c5e8d8;padding:5px 0;font-size:12px}.coach-navigation>span{font-size:11px;color:#91a6a3}
+.coach-cues{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding-bottom:3px}.coach-cues button{min-height:44px;flex:1 0 78px;white-space:nowrap;padding:6px 8px;background:#17282d;font:11px ui-monospace,monospace;border-color:#ffffff0c}
+.coach-cues button[aria-current]{border-color:#d8c199;color:#f5dfb8;background:#37332a}
+.coach-steps{list-style:none;padding:12px 0 0;margin:0;display:none}.coach-steps li+li{border-top:1px solid #ffffff10}
+.coach-steps button{display:grid;grid-template-columns:26px minmax(0,1fr) 38px;gap:10px;width:100%;border:0;border-radius:8px;background:transparent;padding:13px 10px;text-align:left;min-height:64px}
+.coach-step-index,.coach-steps time{font:11px ui-monospace,monospace;color:#8ca79d;padding-top:4px}.coach-steps strong{font-size:13px;font-weight:550}.coach-step-copy{display:block;font-size:12px;line-height:1.8;color:#acbfb8;margin-top:4px}.coach-steps button[aria-current]{background:#24312b;box-shadow:inset 3px 0 #eed4a1}.coach-steps button[aria-current] .coach-step-index{color:#eed4a1}
+.coach-panel[data-mode=steps] .coach-steps{display:block}.coach-panel[data-mode=steps] .coach-card,.coach-panel[data-mode=steps] .coach-cues{display:none}
+.coach-panel[data-mode=subtitle] .coach-card,.coach-panel[data-mode=off] .coach-content{display:none}
+.coach-subtitle{position:absolute;z-index:5;pointer-events:none;left:7%;right:7%;bottom:88px;width:fit-content;max-width:86%;margin:auto;padding:12px 18px;border-radius:9px;border-left:3px solid #eed4a1;background:#071113ed;color:#fff;font-size:clamp(14px,1.4vw,20px);line-height:1.75;text-shadow:0 1px 3px #000;box-shadow:0 4px 20px #0003}
+.coach-source-caption{padding:12px 16px;margin-top:12px;border-left:2px solid #eed4a1;background:#14211f;border-radius:0 8px 8px 0;font-size:14px;line-height:1.8;color:#e2eee7}
+#camera-preview .coach-source-caption{font-size:12px;margin:0;border-radius:0}.source-comparison .coach-source-caption{position:relative;z-index:1}
+.immersive .coach-panel{position:absolute;bottom:calc(var(--coach-controls-height,200px) + env(safe-area-inset-bottom));right:16px;width:min(390px,calc(100% - 32px));border:1px solid #ffffff24;border-radius:14px;padding:12px 14px;background:#101c21f2;max-height:calc(100dvh - var(--coach-controls-height,200px) - 145px);overflow-y:auto;overscroll-behavior:contain}
+.immersive .coach-label{font-size:0;gap:0}.immersive .coach-modes button{padding:7px 10px}.immersive .coach-card{padding:14px 0 6px;min-height:0}.immersive .coach-title{font-size:18px}.immersive .coach-copy{font-size:13px;line-height:1.7}.immersive .coach-navigation>span{display:none}
+.immersive .coach-subtitle{bottom:calc(var(--coach-controls-height,200px) + var(--coach-panel-height,150px) + 12px + env(safe-area-inset-bottom));font-size:16px}
+@media(max-width:599px){.coach-panel{padding:14px 12px}.coach-toolbar{gap:8px}.coach-label{font-size:0;gap:0}.coach-modes button{padding:7px 10px;font-size:12px}.coach-card{min-height:180px;padding-top:16px}.coach-title{font-size:19px}.coach-copy{font-size:14px}.coach-navigation{gap:6px}.coach-navigation>span{font-size:10px}.coach-subtitle{left:12px;right:12px;max-width:none;bottom:78px;font-size:14px;padding:10px 12px}.coach-source-caption{font-size:13px}.immersive .coach-panel{left:12px;right:12px;width:auto;padding:10px 12px}.immersive .coach-cues button{flex-basis:62px;font-size:10px}.immersive .coach-navigation{margin:2px 0}.immersive .coach-subtitle{font-size:14px}.immersive .coach-steps{max-height:180px;overflow-y:auto}}
+@media(max-height:500px) and (orientation:landscape){.immersive .coach-panel{right:12px;left:auto;width:340px;bottom:calc(var(--coach-controls-height,130px) + 8px);max-height:calc(100dvh - var(--coach-controls-height,130px) - 65px)}.immersive .coach-navigation,.immersive .coach-cues{display:none}.immersive .coach-title{font-size:15px;margin:5px 0}.immersive .coach-copy{font-size:12px}.immersive .coach-card{padding-top:6px}.immersive .coach-subtitle{left:12px;right:370px;max-width:none;bottom:calc(var(--coach-controls-height,130px) + 10px);font-size:13px}.immersive .coach-modes button{min-height:38px}}
+@media(prefers-reduced-motion:reduce){.coach-panel *{scroll-behavior:auto!important}}
+/* On a portrait phone, reserve space instead of covering the players. */
+@media(max-width:599px) and (orientation:portrait){
+ .immersive #stage{height:calc(100% - var(--coach-controls-height,195px) - var(--coach-panel-height,287px) - 8px)}
+ .immersive .viewbar{position:fixed;bottom:calc(var(--coach-timeline-height,114px) + 24px + env(safe-area-inset-bottom))}
+ .immersive .coach-subtitle{bottom:12px;font-size:14px}
+ .immersive .zoom-controls{top:40%;gap:4px}.immersive .zoom-controls button{width:44px;height:44px}
+}

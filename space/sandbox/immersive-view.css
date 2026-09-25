@@ -1,0 +1,18 @@
+#immersive-toggle{position:absolute;z-index:11;right:18px;top:76px;min-height:44px;background:#11222bea;color:#edf2f1;backdrop-filter:blur(12px);font-size:12px}
+body.immersive{position:fixed;top:var(--immersive-scroll-top,0);left:0;width:100%;overflow:hidden;overscroll-behavior:none}
+.immersive .replay-panel{position:fixed;inset:0;z-index:100;width:100%;height:100vh;height:100dvh;border:0;border-radius:0;background:#101a20;overflow:hidden}
+.immersive #stage{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
+.immersive .stage-heading{top:max(14px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left))}
+.immersive .stage-heading h1{font-size:16px;margin-top:3px}
+.immersive .hud{top:68px;left:max(16px,env(safe-area-inset-left))}
+.immersive #immersive-toggle{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right))}
+.immersive #touch-orbit{top:calc(max(12px,env(safe-area-inset-top)) + 52px);right:max(12px,env(safe-area-inset-right));font-size:11px;color:#edf2f1}
+.immersive .timeline{position:absolute;z-index:6;bottom:max(10px,env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));padding:10px 12px;border:1px solid #ffffff20;border-radius:12px;background:#101d24e8;backdrop-filter:blur(12px)}
+.immersive .timeline-caption,.immersive .timeline .hint,.immersive .timeline .moments,.immersive .stage-footer-note{display:none}
+.immersive .viewbar{bottom:calc(max(10px,env(safe-area-inset-bottom)) + var(--transport-height,64px) + 12px);left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));padding:3px 0;touch-action:pan-x}
+.immersive .viewbar button{min-height:44px}
+.immersive .zoom-controls{right:max(12px,env(safe-area-inset-right));top:43%}
+.immersive #camera-preview{z-index:15;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 135px)!important;max-height:60dvh}
+.immersive #preview-video{height:min(28dvh,240px)}
+@media(max-width:600px){#immersive-toggle{right:14px;top:70px;font-size:11px}.immersive .stage-heading h1,.immersive .hud{display:none}.immersive .stage-heading{max-width:55%;top:calc(max(12px,env(safe-area-inset-top)) + 12px)}.immersive #clock{font-size:10px}.immersive .camera-marker{min-height:36px;padding:5px 7px}.immersive .camera-marker svg{display:none}}
+@media(orientation:landscape) and (max-height:500px){.immersive .stage-heading,.immersive .hud{display:none}.immersive .timeline{left:20%;right:20%;padding:6px 10px}.immersive .viewbar{bottom:calc(max(8px,env(safe-area-inset-bottom)) + var(--transport-height,64px) + 12px);right:110px}.immersive .zoom-controls{top:40%;flex-direction:row}.immersive .camera-marker{min-height:32px;padding:4px 7px}.immersive #touch-orbit{font-size:10px;padding:6px}}

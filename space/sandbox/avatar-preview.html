@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090c12">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="data:,">
+  <title>アバター検証｜Blender GLB プレビュー</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #090c12; color: #e8edf5;
+           font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+    .panel {
+      position: fixed; backdrop-filter: blur(12px);
+      background: rgba(14, 18, 26, 0.82); border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 14px; padding: 14px 16px;
+    }
+    .head { top: 16px; left: 16px; max-width: min(420px, calc(100vw - 32px)); }
+    .head h1 { margin: 0 0 4px; font-size: 15px; letter-spacing: 0.02em; }
+    .head p { margin: 0; font-size: 12px; line-height: 1.6; color: #9fb0c6; }
+    .tools { top: 16px; right: 16px; display: grid; gap: 8px; }
+    .tools button, .tools select {
+      font: inherit; font-size: 12px; padding: 7px 11px; border-radius: 9px;
+      background: rgba(255, 255, 255, 0.06); color: #e8edf5;
+      border: 1px solid rgba(255, 255, 255, 0.12); cursor: pointer;
+    }
+    .tools button[aria-pressed="true"] { background: #2f6df0; border-color: #2f6df0; }
+    .stats { bottom: 16px; left: 16px; font-size: 12px; color: #9fb0c6;
+             font-variant-numeric: tabular-nums; line-height: 1.7; }
+    .stats b { color: #e8edf5; font-weight: 600; }
+    .error { color: #ff9b9b; }
+  </style>
+</head>
+<body>
+  <canvas id="stage" aria-label="アバタープレビュー"></canvas>
+
+  <section class="panel head">
+    <h1>細身アスリート＋解剖リグ｜GLB検証</h1>
+    <p>Blenderで生成した <code>athlete.glb</code> を読み込み、関節可動域と
+       スキニングの破綻を確認するためのプレビュー。ドラッグで回転、ホイールでズーム。</p>
+  </section>
+
+  <aside class="panel tools" aria-label="表示設定">
+    <select id="pose" aria-label="ポーズ">
+      <option value="rest">レストポーズ</option>
+      <option value="squat">低い構え</option>
+      <option value="contact">接触姿勢</option>
+      <option value="kick">キック直前</option>
+      <option value="overextend">膝の過伸展テスト</option>
+    </select>
+    <button id="skeleton" type="button" aria-pressed="false">骨格を表示</button>
+    <button id="spin" type="button" aria-pressed="true">自動回転</button>
+    <button id="reset" type="button">視点を戻す</button>
+  </aside>
+
+  <section class="panel stats" id="stats">読み込み中…</section>
+
+  <script type="module" src="./avatar-preview.js"></script>
+</body>
+</html>

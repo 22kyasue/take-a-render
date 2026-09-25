@@ -1,0 +1,18 @@
+.avatar-guide{grid-column:1/-1;order:5;min-width:0;padding:28px;border:1px solid var(--line);border-radius:16px;background:#111d24;color:#edf4f2}
+.avatar-guide-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.avatar-guide h2{font-size:22px;line-height:1.5;margin:8px 0}
+.avatar-guide-badge{font-size:11px;border:1px solid #8ee1b655;border-radius:30px;padding:7px 12px;color:var(--accent)}
+.avatar-guide-intro{font-size:14px;line-height:1.8;color:#b3c6cd;margin:8px 0 24px}
+.avatar-guide-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:30px;align-items:start}
+.avatar-guide-figure{margin:0;min-width:0}.avatar-guide-figure img{width:100%;height:auto;display:block;border-radius:10px;background:#252525}
+.avatar-guide-figure figcaption{font-size:11px;line-height:1.8;color:#a2b7c0;margin:12px 0}
+.avatar-guide-link{display:inline-flex;align-items:center;min-height:44px;color:var(--accent);font-size:13px;text-decoration:underline;text-underline-offset:4px}
+.avatar-guide-benefit{display:flex;gap:14px;margin-bottom:20px}.avatar-guide-benefit>span{font:12px ui-monospace,monospace;color:var(--accent);padding-top:5px}
+.avatar-guide h3{font:600 15px/1.6 system-ui;letter-spacing:0;color:#e6eee9;margin:0 0 6px}
+.avatar-guide p{line-height:1.9}.avatar-guide-benefit p,.avatar-guide-details p{font-size:13px;color:#b3c6cd;margin:0}
+.avatar-guide-note{font-size:12px;color:#b3c6cd;border-left:2px solid #81b398;padding-left:14px;margin:0}
+.avatar-guide-details{border-top:1px solid var(--line);margin-top:24px;padding-top:6px}
+.avatar-guide-details summary{font-size:14px;cursor:pointer;padding:16px 0;min-height:44px}
+.avatar-guide-details>div{max-width:900px;padding:0 0 8px}.avatar-guide-details h3{margin-top:16px}
+.avatar-guide a:focus-visible,.avatar-guide summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media(max-width:760px){.avatar-guide{padding:20px; width:100%}.avatar-guide-grid{grid-template-columns:1fr;gap:24px}.avatar-guide h2{font-size:19px}.avatar-guide-intro{font-size:13px}}

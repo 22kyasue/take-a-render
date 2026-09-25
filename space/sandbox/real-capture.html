@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090c12">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="data:,">
+  <title>v0 実キャプチャ再生｜マルチビュー3D化パイプライン検証</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #090c12; color: #e8ecf4; font: 14px/1.6 system-ui, sans-serif; overflow: hidden; }
+    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    .hud {
+      position: fixed; left: 16px; top: 14px; z-index: 3; padding: 10px 16px;
+      background: rgba(9,12,18,0.8); border: 1px solid #1c2330; border-radius: 12px;
+    }
+    .hud strong { display: block; font-size: 15px; }
+    .hud span { font-size: 11px; color: #8892a4; }
+    .bar {
+      position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 3;
+      display: flex; gap: 8px; align-items: center;
+      width: min(92%, 560px);
+      background: rgba(9,12,18,0.85); border: 1px solid #1c2330; border-radius: 12px; padding: 8px 12px;
+    }
+    button { padding: 7px 12px; background: #ffb545; border: 0; border-radius: 8px; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    input[type=range] { flex: 1; min-width: 0; }
+    #time { flex-shrink: 0; font-size: 12px; color: #96a0b3; }
+    #status { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5; color: #8892a4; background: #090c12; }
+  </style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <div class="hud">
+    <strong>v0 実キャプチャ再生</strong>
+    <span id="meta">マルチビュー3D化パイプラインの出力を読み込みます</span>
+  </div>
+  <div class="bar">
+    <button id="play" type="button">Ⅱ</button>
+    <input id="timeline" type="range" min="0" max="1000" value="0">
+    <span id="time">0.00s</span>
+  </div>
+  <p id="status">real-capture-data.json を読み込み中…</p>
+  <script type="module" src="./real-capture.js"></script>
+</body>
+</html>

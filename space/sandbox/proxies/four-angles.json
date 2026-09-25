@@ -1,0 +1,29 @@
+{
+  "fps": 30,
+  "duration": 8,
+  "tileWidth": 640,
+  "tileHeight": 440,
+  "sources": [
+    {
+      "id": "cam1_west",
+      "offset": 0,
+      "slot": 0
+    },
+    {
+      "id": "cam2_goalback",
+      "offset": 0.02141,
+      "slot": 1
+    },
+    {
+      "id": "cam3_east",
+      "offset": -0.00156,
+      "slot": 2
+    },
+    {
+      "id": "cam4_side",
+      "offset": 0.00541,
+      "slot": 3
+    }
+  ],
+  "timing": "Estimated camera offsets relative to the west view; rounded to 30 fps."
+}

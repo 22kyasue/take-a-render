@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<title>多視点モーションキャプチャ構想｜v0 検証報告</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0d13; --panel: #10141d; --line: #1d2432;
+    --text: #e9edf5; --sub: #96a0b3; --accent: #ffb545; --good: #4cd98a;
+    --sf: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --jp: "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.9 var(--jp); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 28px 80px; }
+  .eyebrow { color: var(--accent); font-size: 12px; letter-spacing: 0.28em; font-weight: 700; }
+  h1 { font-size: 34px; line-height: 1.5; margin: 10px 0 8px; }
+  .lead { color: var(--sub); font-size: 15px; margin-bottom: 10px; }
+  .date { color: var(--sub); font-size: 12px; letter-spacing: 0.1em; }
+
+  .verdict {
+    margin: 36px 0; padding: 22px 26px; border: 1px solid var(--good);
+    border-radius: 14px; background: rgba(76, 217, 138, 0.06);
+    font-size: 18px; font-weight: 700;
+  }
+  .verdict small { display: block; font-weight: 400; font-size: 13px; color: var(--sub); margin-top: 6px; }
+
+  .io {
+    display: grid; grid-template-columns: 1fr auto 1.1fr; gap: 16px; align-items: stretch;
+    margin: 0 0 28px;
+  }
+  .io-label { font-size: 12.5px; color: var(--sub); margin-bottom: 8px; letter-spacing: 0.04em; }
+  .quad { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .quad figure { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .quad video { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; }
+  .quad figcaption {
+    position: absolute; left: 6px; top: 6px; font-size: 10px; font-weight: 700;
+    background: rgba(9,12,18,0.8); border: 1px solid var(--accent); color: var(--accent);
+    padding: 1px 7px; border-radius: 4px; letter-spacing: 0.1em;
+  }
+  .io-arrow { align-self: center; text-align: center; color: var(--accent); font-size: 30px; font-weight: 700; }
+  .io-arrow small { display: block; font-size: 11px; color: var(--sub); line-height: 1.6; margin-top: 4px; }
+  .io iframe {
+    width: 100%; height: 100%; min-height: 330px; border: 1px solid var(--line); border-radius: 10px;
+    background: #000;
+  }
+  @media (max-width: 900px) { .io { grid-template-columns: 1fr; } .io-arrow { transform: rotate(90deg); } }
+  .io-pitch { font-size: 16.5px; color: #c9d1e0; margin: 0 0 18px; line-height: 2; }
+  .io-second { grid-template-columns: 1fr; margin-top: 4px; margin-bottom: 44px; }
+  .io-down { transform: none; padding: 4px 0 10px; }
+  .io-second iframe { min-height: 460px; }
+  .io-note { font-size: 11.5px; color: var(--sub); margin-top: 8px; }
+  .lesson-learned { border-color: #5a3a3a; }
+  .legacy-frame { width: 100%; min-height: 560px; border: 1px solid var(--line); border-radius: 10px; background: #000; margin-top: 6px; }
+  .legacy-tools { display: flex; align-items: center; gap: 12px; margin: 12px 0 4px; flex-wrap: wrap; }
+  .legacy-tools button {
+    padding: 9px 18px; background: var(--accent); border: 0; border-radius: 8px;
+    font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: #14100a;
+  }
+  .legacy-tools span { font-size: 12px; color: var(--sub); }
+
+  /* フルスクリーン対象ゾーンと共通ボタン */
+  .fs-bar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .fs-bar button, .fs-inline {
+    padding: 7px 14px; background: var(--accent); border: 0; border-radius: 8px;
+    font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; color: #14100a;
+  }
+  .fs-inline { margin-left: 10px; padding: 4px 10px; font-size: 11.5px; vertical-align: middle; }
+  .fs-zone:fullscreen { background: var(--bg); padding: 3vh 3vw; overflow: auto; }
+  .fs-zone:fullscreen iframe { min-height: 62vh; }
+  .fs-zone:fullscreen .io-second iframe { min-height: 84vh; }
+  .fs-zone:fullscreen .io-second { margin: 0; }
+  .fs-zone:fullscreen .quad video { aspect-ratio: 16/9; }
+  iframe:fullscreen { background: #000; }
+
+  /* 技術メモのポップアップ */
+  details.pop { display: inline-block; position: relative; margin-left: 10px; vertical-align: middle; }
+  details.pop summary {
+    list-style: none; cursor: pointer; display: inline-block;
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px;
+  }
+  details.pop summary::-webkit-details-marker { display: none; }
+  details.pop[open] summary { background: var(--accent); color: #14100a; }
+  .pop-body {
+    position: absolute; z-index: 30; top: calc(100% + 8px); left: 0;
+    width: min(440px, 80vw); background: #141a26; border: 1px solid #2a3446;
+    border-radius: 10px; padding: 14px 16px; font-size: 12.5px; line-height: 1.85;
+    color: #c9d1e0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: 400;
+  }
+  .tech-grid { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: center; }
+  .tech-grid svg { width: 100%; height: auto; }
+  .tech-steps { margin: 0 0 0 1.2em; color: #c9d1e0; font-size: 14.5px; }
+  .tech-steps li { margin-bottom: 10px; }
+  .tech-key { color: var(--accent); font-weight: 700; }
+  .tech-close { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 15px; }
+  .tech-h3 { font-size: 16px; margin: 28px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .tech-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tech-detail article { background: #0d1119; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .tech-detail h4 { font-size: 14px; color: var(--accent); margin-bottom: 6px; display: flex; align-items: center; gap: 9px; }
+  .tech-detail h4 i {
+    font-style: normal; font-family: var(--sf); font-weight: 800; font-size: 10.5px;
+    color: #14100a; background: #fff; border-radius: 4px; padding: 1px 7px; letter-spacing: 0.06em;
+  }
+  .tech-detail h4 em {
+    font-style: normal; margin-left: auto; font-family: var(--sf); font-weight: 700;
+    font-size: 8.5px; letter-spacing: 0.2em; color: var(--sub);
+  }
+  .tech-detail p { font-size: 13px; line-height: 1.9; margin: 0; }
+  .mini { width: 100%; height: auto; display: block; background: #0a0a0b; border: 1px solid #1e1e22; border-radius: 8px; margin: 10px 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chips span {
+    font-family: var(--sf); font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    border: 1px solid #38383d; color: var(--sub); border-radius: 999px; padding: 2px 10px;
+  }
+  @media (max-width: 760px) { .tech-detail { grid-template-columns: 1fr; } }
+
+  /* 説明モード切替: 技術者向け(t-pro) ⇔ やさしい説明(t-simple) */
+  .mode-toggle { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
+  .mode-toggle button {
+    padding: 9px 18px; background: var(--accent); border: 0; border-radius: 999px;
+    font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; color: #14100a;
+  }
+  .mode-toggle span { font-size: 12px; color: var(--sub); }
+  .t-simple { display: none; }
+  body.simple .t-simple { display: block; }
+  body.simple .t-pro { display: none; }
+  body.simple .t-simple { font-size: 13.5px; }
+  /* やさしいモードでは専門用語チップも隠してスッキリさせる */
+  body.simple .chips { display: none; }
+  body.simple .tech-detail h4 em { display: none; }
+
+  /* パイプラインの流れを光で示す */
+  @keyframes chip-glow { 0%, 18%, 100% { border-color: var(--line); color: #c9d1e0; } 6% { border-color: var(--accent); color: var(--accent); } }
+  .pipeline span { animation: chip-glow 7.2s infinite; }
+  .pipeline span:nth-of-type(2) { animation-delay: 1.2s; }
+  .pipeline span:nth-of-type(3) { animation-delay: 2.4s; }
+  .pipeline span:nth-of-type(4) { animation-delay: 3.6s; }
+  .pipeline span:nth-of-type(5) { animation-delay: 4.8s; }
+  .pipeline span:nth-of-type(6) { animation-delay: 6s; }
+  @media (max-width: 760px) { .tech-grid { grid-template-columns: 1fr; } }
+
+  .pipeline {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin: 8px 0 40px; font-size: 13px;
+  }
+  .pipeline span {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; white-space: nowrap;
+  }
+  .pipeline i { color: var(--accent); font-style: normal; }
+
+  section { margin-bottom: 40px; }
+  .num { color: var(--accent); font-size: 13px; letter-spacing: 0.24em; font-weight: 700; }
+  h2 { font-size: 22px; margin: 4px 0 12px; }
+  p { color: #c9d1e0; margin-bottom: 10px; }
+  strong { color: var(--text); }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 26px 28px;
+  }
+  ul { margin: 8px 0 4px 1.3em; color: #c9d1e0; }
+  li { margin-bottom: 6px; }
+
+  .demo-links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .demo-links a {
+    display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px;
+    color: var(--text); text-decoration: none; background: #0d1119;
+    transition: border-color 0.15s ease;
+  }
+  .demo-links a:hover { border-color: var(--accent); }
+  .demo-links b { display: block; font-size: 14px; }
+  .demo-links span { font-size: 12px; color: var(--sub); }
+
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  .fact { background: #0d1119; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .fact b { display: block; font-size: 20px; color: var(--accent); }
+  .fact span { font-size: 11.5px; color: var(--sub); display: block; line-height: 1.75; margin-top: 4px; }
+  .fact em { font-style: normal; color: #d9dee8; font-weight: 700; display: block; }
+
+  .next { border-left: 3px solid var(--accent); padding-left: 18px; margin-top: 10px; }
+  footer { color: var(--sub); font-size: 12px; border-top: 1px solid var(--line); padding-top: 18px; margin-top: 40px; }
+  @media (max-width: 640px) { .demo-links, .facts { grid-template-columns: 1fr; } h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">MULTI-VIEW MOTION CAPTURE — v0 FEASIBILITY REPORT</p>
+  <h1>多視点映像から選手の3Dモーションを生成する<br>プロダクト構想 ― v0 検証報告</h1>
+  <p class="lead">4〜5台のカメラで撮った映像を、自由視点で観察できる3Dモーションに変換する。その全工程が実際に動くことを確認しました。</p>
+  <p class="date">2026.08.07 ｜ CLUTCH Inc. ｜ 社外秘</p>
+
+  <div class="verdict">
+    結論: 「撮影 → 3D化 → 自由視点サンドボックス」は、本日、実データで一気通貫で動作しました。
+    <small>特殊なスタジオ・高価な機材は不要。市販カメラ数台と汎用PCのみで検証済み。</small>
+  </div>
+
+  <!-- 提案の全体像を1画面で: 4カメラ映像 → 3D復元 → サッカー演出と統合。 -->
+  <p class="io-pitch">この4本の映像だけから選手の動きを立体として再構成し、ピッチ・ボール・相手選手・カメラワークと組み合わせる。<strong>森岡薫さんの「体の使い方」を、好きな角度から何度でも見られる映像にする ― それが今回のご提案です。</strong></p>
+
+  <div id="io-stage" class="fs-zone">
+    <div class="fs-bar">
+      <button type="button" data-fullscreen="#io-stage">⛶ ①②をフルスクリーンで見る</button>
+    </div>
+    <section class="io">
+      <div class="io-side">
+        <p class="io-label">① 撮影 ― 4台のカメラで、同じプレーを同時に記録
+          <details class="pop"><summary>技術メモ</summary><div class="pop-body">
+            必要な機材は市販カメラ4台のみ。設営時に市松模様のボードを一度映すだけで、各カメラの位置・向き・レンズ特性を自動算出します(キャリブレーション)。フレーム同期は映像・音声の相関から自動で取れるため、専用の同期装置は不要です。
+          </div></details>
+        </p>
+        <div class="quad">
+          <figure><video src="./assets/v0/cam01.mp4" autoplay muted loop playsinline></video><figcaption>CAM 01</figcaption></figure>
+          <figure><video src="./assets/v0/cam02.mp4" autoplay muted loop playsinline></video><figcaption>CAM 02</figcaption></figure>
+          <figure><video src="./assets/v0/cam03.mp4" autoplay muted loop playsinline></video><figcaption>CAM 03</figcaption></figure>
+          <figure><video src="./assets/v0/cam04.mp4" autoplay muted loop playsinline></video><figcaption>CAM 04</figcaption></figure>
+        </div>
+      </div>
+      <div class="io-arrow">→<small>関節を検出し<br>三角測量で立体化</small></div>
+      <div class="io-side">
+        <p class="io-label">② 復元 ― 映像の中の動きが、回せる立体になる
+          <details class="pop"><summary>技術メモ</summary><div class="pop-body">
+            姿勢推定モデルが各映像から股関節・膝・足首・つま先・かかとまで26点の関節を毎フレーム検出。校正済みカメラの幾何情報を使った三角測量(DLT法)で3D座標に統合します。再投影誤差が15pxを超える視点は自動で除外し、外れ値除去とローパスフィルタ(Butterworth 4次)で計測ノイズを抑えています。
+          </div></details>
+        </p>
+        <iframe src="./real-capture.html" title="3D出力" loading="lazy"></iframe>
+      </div>
+    </section>
+  </div>
+
+  <div id="io-integrate" class="fs-zone">
+    <section class="io io-second">
+      <div class="io-arrow io-down">↓<small>ピッチ・ボール・相手選手・カメラワークと組み合わせる</small></div>
+      <div class="io-side">
+        <p class="io-label">③ 完成イメージ ― サッカーの文脈に置き、プレーとして見せる
+          <button type="button" class="fs-inline" data-fullscreen="#io-integrate" data-fallback="./capture-method.html">⛶ フルスクリーン</button>
+          <details class="pop"><summary>技術メモ</summary><div class="pop-body">
+            復元した関節の軌道をリグ付き3Dモデルに移し替え(リターゲティング)、競技規則どおりの寸法で作ったコート上に配置。ブラウザ標準のWebGLで描画しているため、アプリのインストールなしにPC・iPadでそのまま動きます。カメラ演出はサッカーゲームのリプレイと同じ手法です。
+          </div></details>
+        </p>
+        <iframe id="integrate-frame" src="./capture-method.html" title="統合デモ" loading="lazy" allowfullscreen></iframe>
+        <p class="io-note">※ このデモの選手の動きは公開モーション素材です。本番では、①②で収録した森岡さんご本人の動きに置き換わります。</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="pipeline">
+    <span>4台の同時撮影映像</span><i>→</i>
+    <span>各映像から関節を検出(AI)</span><i>→</i>
+    <span>カメラ位置の自動校正</span><i>→</i>
+    <span>三角測量で3D復元</span><i>→</i>
+    <span>ノイズ除去</span><i>→</i>
+    <span>3Dサンドボックス再生</span>
+  </div>
+
+  <section class="card lesson-learned">
+    <p class="num">なぜ4点必要か ― 反面教師</p>
+    <h2>1台のカメラ(TikTok映像)では、ここまでしかできなかった</h2>
+    <p>私たちは最初に、公開されていた1本の映像(1視点)から森岡さんのプレーの3D化を試みました。<strong>これはうまくいきませんでした。</strong>下がその実物です ― 左が元映像、右がそこから推定した3D。動きの「雰囲気」は出ますが、教材品質には届きません。</p>
+    <div class="legacy-tools">
+      <button type="button" data-fullscreen="#legacy-frame">⛶ デモだけをフルスクリーンで見る</button>
+      <span>解説なしでデモ単体を大画面表示します(Escで戻る)。画面内に「単眼の限界」の注釈が出ます</span>
+    </div>
+    <iframe id="legacy-frame" class="legacy-frame" src="./legacy/" title="単眼推定版デモ(反面教師)" loading="lazy" allowfullscreen></iframe>
+    <p style="margin-top:16px"><strong>うまくいかなかった理由(=1視点の原理的な限界):</strong></p>
+    <ul>
+      <li><strong>奥行きが決まらない</strong> ― 1台のカメラでは「近くの小さい動き」と「遠くの大きい動き」が区別できず、踏み込みの深さ・歩幅・体の傾きが歪む。数学的に情報が足りないので、AIを賢くしても解決しない</li>
+      <li><strong>隠れた体は写っていない</strong> ― 背負いの局面では守備者と体が重なり、隠れた側の腕・脚は推定(=想像)になる。密着プレーほど破綻し、体どうしのめり込みも起きた</li>
+      <li><strong>関節が震える</strong> ― 単眼推定は毎フレームの誤差が大きく、平滑化フィルタを重ねても「ぬるっとした不自然さ」が残った</li>
+      <li><strong>映像の外は作れない</strong> ― 元映像は2.9秒で切れており、シュートの続きは手付けアニメで補完するしかなかった(右のデモの後半がそれ)</li>
+    </ul>
+    <p class="tech-close">この4つは撮り方の問題であって、技術の問題ではありません。<strong>だから4台の固定カメラで囲んで撮る ― それだけで下記の通りすべて解決します。</strong></p>
+  </section>
+
+  <section class="card">
+    <p class="num">TECHNICAL DEEP DIVE</p>
+    <h2>4点映像は、どうやって1つの3Dになるのか</h2>
+    <div class="mode-toggle">
+      <button id="mode-btn" type="button">🙂 やさしい説明に切り替え</button>
+      <span id="mode-note">いまは技術者向けの表記です</span>
+    </div>
+    <p>下の図は仕組みの心臓部です。<strong>選手が動くと、4台のカメラからの「視線」が常に1点で交わり続ける</strong> ― この交点を毎秒60回求め続けることが、モーションキャプチャの正体です。</p>
+
+    <div class="tech-grid">
+      <svg viewBox="0 0 360 300" role="img" aria-label="三角測量のアニメーション図解">
+        <rect x="60" y="50" width="240" height="200" rx="8" fill="none" stroke="#2a3446"/>
+        <text x="180" y="40" fill="#96a0b3" font-size="11" text-anchor="middle">半面ピッチ(上から見た図)</text>
+        <g font-size="10" fill="#ffb545" text-anchor="middle">
+          <rect x="52" y="42" width="16" height="16" rx="3" fill="#ffb545">
+            <animate attributeName="opacity" values="1;0.45;1" dur="1.6s" repeatCount="indefinite"/>
+          </rect><text x="60" y="32">CAM1</text>
+          <rect x="292" y="42" width="16" height="16" rx="3" fill="#ffb545">
+            <animate attributeName="opacity" values="1;0.45;1" dur="1.6s" begin="0.4s" repeatCount="indefinite"/>
+          </rect><text x="300" y="32">CAM2</text>
+          <rect x="52" y="242" width="16" height="16" rx="3" fill="#ffb545">
+            <animate attributeName="opacity" values="1;0.45;1" dur="1.6s" begin="0.8s" repeatCount="indefinite"/>
+          </rect><text x="60" y="274">CAM3</text>
+          <rect x="292" y="242" width="16" height="16" rx="3" fill="#ffb545">
+            <animate attributeName="opacity" values="1;0.45;1" dur="1.6s" begin="1.2s" repeatCount="indefinite"/>
+          </rect><text x="300" y="274">CAM4</text>
+        </g>
+        <!-- 動く関節点を4本の視線が追い続ける -->
+        <g stroke="#ffb545" stroke-opacity="0.55" stroke-dasharray="4 3">
+          <line x1="60" y1="50">
+            <animate attributeName="x2" values="190;235;175;130;190" dur="8s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="120;170;215;160;120" dur="8s" repeatCount="indefinite"/>
+          </line>
+          <line x1="300" y1="50">
+            <animate attributeName="x2" values="190;235;175;130;190" dur="8s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="120;170;215;160;120" dur="8s" repeatCount="indefinite"/>
+          </line>
+          <line x1="60" y1="250">
+            <animate attributeName="x2" values="190;235;175;130;190" dur="8s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="120;170;215;160;120" dur="8s" repeatCount="indefinite"/>
+          </line>
+          <line x1="300" y1="250">
+            <animate attributeName="x2" values="190;235;175;130;190" dur="8s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="120;170;215;160;120" dur="8s" repeatCount="indefinite"/>
+          </line>
+        </g>
+        <circle r="7" fill="#56c8ff">
+          <animate attributeName="cx" values="190;235;175;130;190" dur="8s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="120;170;215;160;120" dur="8s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="12" fill="none" stroke="#56c8ff" stroke-opacity="0.6">
+          <animate attributeName="cx" values="190;235;175;130;190" dur="8s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="120;170;215;160;120" dur="8s" repeatCount="indefinite"/>
+          <animate attributeName="r" values="9;16;9" dur="1.6s" repeatCount="indefinite"/>
+          <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="1.6s" repeatCount="indefinite"/>
+        </circle>
+        <text x="180" y="292" fill="#56c8ff" font-size="11" text-anchor="middle">視線の交点 = 関節の3D位置(選手が動いても追い続ける)</text>
+      </svg>
+      <ol class="tech-steps">
+        <li><strong>同期</strong> ― 4台の映像の時刻を合わせ、全カメラが「同じ瞬間」を写している状態を作る</li>
+        <li><strong>校正</strong> ― 各カメラの位置・向き・レンズ特性を一度だけ自動計算</li>
+        <li><strong>2D検出</strong> ― 各映像から関節26点を毎フレーム検出</li>
+        <li><strong>三角測量</strong> ― 視線の交点として関節の3D座標を確定。<span class="tech-key">1台では決まらない奥行きが、視線の交差で一意に決まる</span></li>
+        <li><strong>品質管理</strong> ― 精度の低い視点を毎フレーム自動除外し、残った視点だけで復元を継続</li>
+      </ol>
+    </div>
+
+    <h3 class="tech-h3">各工程の詳細</h3>
+    <div class="tech-detail">
+      <article>
+        <h4><i>01</i>撮影と同期 <em>SUB-FRAME SYNC</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <text x="10" y="16" fill="#5a6478" font-size="8">CAM1 AUDIO</text>
+          <polyline points="10,30 30,22 45,38 60,18 80,34 100,24 120,36 140,20 160,32 180,26 200,34 220,22 240,30 260,26 290,30" fill="none" stroke="#56c8ff" stroke-width="1.6"/>
+          <text x="10" y="52" fill="#5a6478" font-size="8">CAM2 AUDIO</text>
+          <g>
+            <polyline points="10,66 30,58 45,74 60,54 80,70 100,60 120,72 140,56 160,68 180,62 200,70 220,58 240,66 260,62 290,66" fill="none" stroke="#ffb545" stroke-width="1.6"/>
+            <animateTransform attributeName="transform" type="translate" values="-26 0; 0 0; 0 0; -26 0" keyTimes="0;0.35;0.8;1" dur="4.5s" repeatCount="indefinite"/>
+          </g>
+          <line x1="140" y1="8" x2="140" y2="76" stroke="#4cd98a" stroke-width="1" stroke-dasharray="3 3">
+            <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.3;0.4;0.8;1" dur="4.5s" repeatCount="indefinite"/>
+          </line>
+          <text x="146" y="12" fill="#4cd98a" font-size="8">
+            <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.3;0.4;0.8;1" dur="4.5s" repeatCount="indefinite"/>SYNC LOCK</text>
+        </svg>
+        <p class="t-simple">同じプレーを、4台のカメラで同時に録画します。あとで4本の動画の「時間」をピタッと合わせる必要がありますが、これは音(ボールを蹴る音や手拍子)を手がかりにコンピュータが自動で揃えてくれます。特別な機材は要りません。</p><p class="t-pro">4台のカメラを半面ピッチを囲むように設置します(高さ1.5〜2m、隣り合うカメラの画角が必ず重なる配置)。時刻合わせは映像と音声の相互相関からフレーム未満の精度で自動推定 ― タイムコード発生器などの専用同期機材は不要です。シャッター速度1/500秒以上を推奨するのは、動きブレが関節検出の精度に直結するためです。</p>
+        <div class="chips"><span>1080p / 60fps</span><span>シャッター 1/500s+</span><span>音声相互相関</span><span>同期精度 &lt; 1フレーム</span></div>
+      </article>
+
+      <article>
+        <h4><i>02</i>カメラキャリブレーション <em>CAMERA GEOMETRY</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <g transform="translate(18,12) rotate(-6 50 28)">
+            <rect width="100" height="56" fill="#0d1119" stroke="#2a3446"/>
+            <g fill="#c9d1e0">
+              <rect x="0" y="0" width="14" height="14"/><rect x="28" y="0" width="14" height="14"/><rect x="56" y="0" width="14" height="14"/><rect x="84" y="0" width="14" height="14"/>
+              <rect x="14" y="14" width="14" height="14"/><rect x="42" y="14" width="14" height="14"/><rect x="70" y="14" width="14" height="14"/>
+              <rect x="0" y="28" width="14" height="14"/><rect x="28" y="28" width="14" height="14"/><rect x="56" y="28" width="14" height="14"/><rect x="84" y="28" width="14" height="14"/>
+              <rect x="14" y="42" width="14" height="14"/><rect x="42" y="42" width="14" height="14"/><rect x="70" y="42" width="14" height="14"/>
+            </g>
+            <g fill="#4cd98a">
+              <circle cx="14" cy="14" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" repeatCount="indefinite"/></circle>
+              <circle cx="42" cy="14" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.15s" repeatCount="indefinite"/></circle>
+              <circle cx="70" cy="14" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.3s" repeatCount="indefinite"/></circle>
+              <circle cx="14" cy="28" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.45s" repeatCount="indefinite"/></circle>
+              <circle cx="42" cy="28" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.6s" repeatCount="indefinite"/></circle>
+              <circle cx="70" cy="28" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.75s" repeatCount="indefinite"/></circle>
+              <circle cx="14" cy="42" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.9s" repeatCount="indefinite"/></circle>
+              <circle cx="42" cy="42" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.05s" repeatCount="indefinite"/></circle>
+              <circle cx="70" cy="42" r="2.4"><animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.2s" repeatCount="indefinite"/></circle>
+            </g>
+          </g>
+          <g font-size="8.5" fill="#96a0b3">
+            <text x="150" y="22">fx, fy(焦点距離)  cx, cy(主点)</text>
+            <text x="150" y="38">k1, k2, p1, p2(歪み係数)</text>
+            <text x="150" y="54">R, t(設置位置・向き)</text>
+            <text x="150" y="72" fill="#4cd98a">reprojection RMS <tspan font-weight="700">0.4 px</tspan>
+              <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/></text>
+          </g>
+        </svg>
+        <p class="t-simple">設営のとき、市松模様の板をそれぞれのカメラに一度見せます。これだけで、コンピュータが「どのカメラが・どこに立って・どこを向いているか」を正確に覚えます。地図でいう現在地合わせのようなもので、一度やれば終わりです。</p><p class="t-pro">市松模様のボードを各カメラに一度映すだけで、内部パラメータ(焦点距離・主点・レンズ歪み係数)と外部パラメータ(設置位置・向き)を自動算出します。品質は「再投影誤差」という一つの数値でサブピクセル単位まで管理でき、設営後にカメラを動かさない限り再校正は不要。三脚が蹴られても、ボードをもう一度映すだけで復旧します。</p>
+        <div class="chips"><span>内部 / 外部パラメータ</span><span>歪み係数 k1 k2 p1 p2</span><span>サブピクセル管理</span><span>再校正ワンショット</span></div>
+      </article>
+
+      <article>
+        <h4><i>03</i>2D姿勢推定 <em>26-KEYPOINT DETECTION</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <g stroke="#3a4358" stroke-width="1.6" fill="none">
+            <line x1="50" y1="14" x2="50" y2="36"/><line x1="50" y1="22" x2="36" y2="34"/><line x1="50" y1="22" x2="64" y2="34"/>
+            <line x1="50" y1="36" x2="40" y2="56"/><line x1="50" y1="36" x2="60" y2="56"/>
+            <line x1="40" y1="56" x2="38" y2="72"/><line x1="60" y1="56" x2="66" y2="72"/>
+          </g>
+          <g fill="#56c8ff">
+            <circle cx="50" cy="12" r="3"><animate attributeName="r" values="2.4;4;2.4" dur="2.6s" repeatCount="indefinite"/></circle>
+            <circle cx="50" cy="22" r="2.4"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="0.2s" repeatCount="indefinite"/></circle>
+            <circle cx="36" cy="34" r="2.4"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="0.4s" repeatCount="indefinite"/></circle>
+            <circle cx="64" cy="34" r="2.4"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="0.6s" repeatCount="indefinite"/></circle>
+            <circle cx="50" cy="36" r="2.4"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="0.8s" repeatCount="indefinite"/></circle>
+            <circle cx="40" cy="56" r="2.4"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="1s" repeatCount="indefinite"/></circle>
+            <circle cx="60" cy="56" r="2.4"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="1.2s" repeatCount="indefinite"/></circle>
+            <circle cx="38" cy="72" r="2.4" fill="#ffb545"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="1.4s" repeatCount="indefinite"/></circle>
+            <circle cx="66" cy="72" r="2.4" fill="#ffb545"><animate attributeName="r" values="2;3.4;2" dur="2.6s" begin="1.6s" repeatCount="indefinite"/></circle>
+          </g>
+          <line x1="20" x2="88" stroke="#4cd98a" stroke-opacity="0.7" stroke-width="1">
+            <animate attributeName="y1" values="8;76;8" dur="3.4s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="8;76;8" dur="3.4s" repeatCount="indefinite"/>
+          </line>
+          <g font-size="8.5" fill="#96a0b3">
+            <text x="120" y="18">confidence</text>
+            <rect x="120" y="24" width="150" height="5" rx="2.5" fill="#1a2130"/>
+            <rect x="120" y="24" height="5" rx="2.5" fill="#4cd98a"><animate attributeName="width" values="60;142;96;142;60" dur="5s" repeatCount="indefinite"/></rect>
+            <text x="120" y="46">keypoints / frame</text>
+            <text x="120" y="66" fill="#e9edf5" font-size="15" font-weight="700">26<tspan fill="#5a6478" font-size="9"> × 4 views × 60 fps</tspan></text>
+          </g>
+        </svg>
+        <p class="t-simple">AIが動画を1コマずつ見て、体の26箇所(肩・肘・膝・足首・つま先・かかとなど)に自動で印をつけます。人間がやる作業はゼロ。マーカーや専用スーツも不要で、普段のユニフォームのまま撮れます。</p><p class="t-pro">深層学習ベースの姿勢推定器が、各カメラ映像から股関節・膝・足首・つま先・かかと・肩・肘・手首など<strong>26点の関節</strong>を毎フレーム検出し、各点に信頼度スコアを付けます。マーカーもスーツも不要で、ユニフォームのまま撮影できます。今回の検証では4視点×約100フレームから404ファイルの関節データを生成しました。</p>
+        <div class="chips"><span>深層学習ベース推論</span><span>26 keypoints</span><span>足部: つま先・小趾・かかと</span><span>信頼度スコア付与</span></div>
+      </article>
+
+      <article>
+        <h4><i>04</i>三角測量(3D復元) <em>DLT TRIANGULATION</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <rect x="14" y="30" width="14" height="12" rx="2" fill="#ffb545"/>
+          <rect x="272" y="30" width="14" height="12" rx="2" fill="#ffb545"/>
+          <line x1="28" y1="36" x2="150" y2="44" stroke="#ffb545" stroke-opacity="0.6" stroke-dasharray="4 3"/>
+          <line x1="272" y1="36" x2="150" y2="44" stroke="#ffb545" stroke-opacity="0.6" stroke-dasharray="4 3"/>
+          <circle cx="150" cy="44" r="14" fill="none" stroke="#ff7a6a" stroke-opacity="0.8">
+            <animate attributeName="r" values="16;3.5" dur="2.8s" repeatCount="indefinite"/>
+            <animate attributeName="stroke-opacity" values="0.8;0.2" dur="2.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="150" cy="44" r="4" fill="#56c8ff"/>
+          <text x="150" y="72" fill="#96a0b3" font-size="8.5" text-anchor="middle">最小二乗収束: 誤差楕円が1点に絞り込まれる</text>
+          <text x="196" y="26" fill="#4cd98a" font-size="8.5">ε &lt; 15px で採用<animate attributeName="opacity" values="0.4;1;0.4" dur="2.8s" repeatCount="indefinite"/></text>
+        </svg>
+        <p class="t-simple">人間が両目でものの距離を掴めるのと同じ原理です。カメラごとの「見え方の違い」から、関節が空間のどこにあるかを計算します。カメラが4台あるので、選手が誰かの陰に隠れても、見えている残りのカメラだけで計算が続きます。</p><p class="t-pro">校正済みカメラの幾何情報(射影行列)を使い、DLT法(直接線形変換)で複数視点の2D検出点から3D座標を最小二乗推定します。信頼度0.3未満、または再投影誤差が15pxを超える視点はその関節の計算から自動的に外します。今回の実測では、除外は<strong>平均0.26台/関節</strong>に留まり、選手が隠れる瞬間も残りのカメラで復元が途切れませんでした。</p>
+        <div class="chips"><span>DLT / 最小二乗</span><span>再投影誤差 15px 閾値</span><span>信頼度 0.3 閾値</span><span>遮蔽ロバスト</span></div>
+      </article>
+
+      <article>
+        <h4><i>05</i>後処理 <em>SIGNAL CONDITIONING</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <polyline points="10,44 28,30 42,52 58,26 74,50 92,32 108,54 124,30 140,48 158,34 174,52 190,30 206,46 224,34 240,50 258,32 290,42"
+            fill="none" stroke="#5a6478" stroke-width="1.3" stroke-opacity="0.8"/>
+          <path d="M10,42 C 60,34 90,50 140,40 S 240,44 290,40" fill="none" stroke="#4cd98a" stroke-width="2.2" stroke-dasharray="420" stroke-dashoffset="420">
+            <animate attributeName="stroke-dashoffset" values="420;0;0;420" keyTimes="0;0.5;0.85;1" dur="5s" repeatCount="indefinite"/>
+          </path>
+          <text x="10" y="16" fill="#5a6478" font-size="8.5">raw(推定生値)</text>
+          <text x="10" y="74" fill="#4cd98a" font-size="8.5">filtered ― Hampel + Butterworth 4th @6Hz + 骨長拘束</text>
+        </svg>
+        <p class="t-simple">スマホの手ブレ補正のようなものです。測定にはどうしても細かいガタつきが混ざるので、それをなめらかに整え、「骨の長さが伸び縮みする」「足が地面にめり込む」といった人体としてありえない状態も自動で直します。</p><p class="t-pro">Hampelフィルタで突発的な外れ値を除去し、Butterworthローパスフィルタ(4次・カットオフ6Hz)で計測ノイズを抑えます。さらに骨の長さを一定に保つ剛体拘束と接地補正を加え、フレーム単位の誤差が「人体としてありえない動き」として現れないよう軌道全体を整えます。</p>
+        <div class="chips"><span>Hampel 外れ値除去</span><span>Butterworth 4次 / 6Hz</span><span>骨長剛体拘束</span><span>接地補正</span></div>
+      </article>
+
+      <article>
+        <h4><i>06</i>リターゲティングと表示 <em>RIG RETARGETING</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <g fill="#56c8ff">
+            <circle cx="40" cy="16" r="2.6"/><circle cx="40" cy="30" r="2.2"/><circle cx="28" cy="42" r="2.2"/><circle cx="52" cy="42" r="2.2"/>
+            <circle cx="34" cy="58" r="2.2"/><circle cx="46" cy="58" r="2.2"/><circle cx="32" cy="72" r="2.2"/><circle cx="50" cy="72" r="2.2"/>
+          </g>
+          <text x="22" y="10" fill="#5a6478" font-size="8">関節軌道(点群)</text>
+          <g stroke="#ffb545" stroke-width="2" fill="none">
+            <line x1="86" y1="40" x2="150" y2="40" stroke-dasharray="6 5">
+              <animate attributeName="stroke-dashoffset" values="44;0" dur="1.4s" repeatCount="indefinite"/>
+            </line>
+            <path d="M146,34 L156,40 L146,46" fill="none"/>
+          </g>
+          <text x="90" y="28" fill="#96a0b3" font-size="8">骨方向へ変換</text>
+          <g transform="translate(196,8)">
+            <ellipse cx="20" cy="8" rx="7" ry="8" fill="#2c3648"/>
+            <rect x="11" y="18" width="18" height="26" rx="7" fill="#2c3648"/>
+            <rect x="4" y="20" width="7" height="22" rx="3.5" fill="#2c3648"/>
+            <rect x="29" y="20" width="7" height="22" rx="3.5" fill="#2c3648"/>
+            <rect x="12" y="45" width="7" height="24" rx="3.5" fill="#2c3648"/>
+            <rect x="21" y="45" width="7" height="24" rx="3.5" fill="#2c3648"/>
+            <animateTransform attributeName="transform" type="translate" values="196,8; 196,5; 196,8" dur="1.8s" repeatCount="indefinite" additive="replace"/>
+          </g>
+          <text x="196" y="78" fill="#5a6478" font-size="8">リグ付き3Dモデル</text>
+          <text x="120" y="66" fill="#4cd98a" font-size="8.5">可動域制約: 膝 0–150° / 首 ±45°</text>
+        </svg>
+        <p class="t-simple">計測した動きを、3Dの人形に「着せる」工程です。膝が逆に曲がらないようにする安全装置つきなので、計測が一瞬乱れても変な姿勢になりません。できあがった3Dは普通のブラウザで見られるので、アプリのインストールは不要です。</p><p class="t-pro">復元した関節軌道を、リグ(骨格)付き3Dモデルの各骨の向きに変換して駆動します。このとき関節ごとの可動域制約(膝は逆に曲がらない、首は±45°まで等)を常時適用し、推定が乱れた瞬間も人体としての破綻を防ぎます。描画はブラウザ標準のWebGL(three.js)なので、アプリのインストールなしにPC・iPadでそのまま動きます。</p>
+        <div class="chips"><span>骨方向ソルブ</span><span>関節可動域クランプ</span><span>WebGL / three.js</span><span>PC・iPad 対応</span></div>
+      </article>
+
+      <article>
+        <h4><i>07</i>精度の目安 <em>ACCURACY BUDGET</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <g transform="translate(52,40)">
+            <circle r="30" fill="none" stroke="#2a3446"/>
+            <circle r="19" fill="none" stroke="#2a3446"/>
+            <circle r="8" fill="none" stroke="#4cd98a" stroke-opacity="0.8"/>
+            <line x1="-34" y1="0" x2="34" y2="0" stroke="#2a3446"/>
+            <line x1="0" y1="-34" x2="0" y2="34" stroke="#2a3446"/>
+            <circle r="2.6" fill="#56c8ff">
+              <animate attributeName="cx" values="0;3;-2;1;-3;0" dur="4s" repeatCount="indefinite"/>
+              <animate attributeName="cy" values="0;-2;3;-1;2;0" dur="4s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <g font-size="8.5" fill="#96a0b3">
+            <text x="110" y="22">関節位置の再現ばらつき</text>
+            <text x="110" y="42" fill="#e9edf5" font-size="15" font-weight="700">± 数cm<tspan fill="#5a6478" font-size="9">(撮影条件に依存)</tspan></text>
+            <text x="110" y="62">台数・解像度・配置に比例して向上 / 後から増設可</text>
+          </g>
+        </svg>
+        <p class="t-simple">再現のズレはものさしで測って数cm以内が目安です。ハリウッド映画で使う数百万円のシステムほどではありませんが、「体の使い方を見て学ぶ」目的には十分です。もっと精度が欲しくなったら、カメラを増やすだけで良くなります。</p><p class="t-pro">適切な撮影条件でのマーカーレス多視点方式は、関節位置で<strong>数cm程度</strong>の再現精度が目安です。光学式マーカー方式(ミリ単位)には及びませんが、「体の使い方を観察する」教材用途には十分な水準です。精度はカメラ台数・解像度・配置に比例して向上するため、要求が上がったらカメラを足すだけでスケールします。</p>
+        <div class="chips"><span>関節位置 ± 数cm</span><span>台数スケーラブル</span><span>教材用途に十分</span></div>
+      </article>
+
+      <article>
+        <h4><i>08</i>処理時間 <em>COMPUTE ROADMAP</em></h4>
+        <svg class="mini" viewBox="0 0 300 80" aria-hidden="true">
+          <g font-size="8.5" fill="#96a0b3">
+            <text x="10" y="18">CPU(現在)</text>
+            <rect x="90" y="10" width="196" height="9" rx="4.5" fill="#1a2130"/>
+            <rect x="90" y="10" height="9" rx="4.5" fill="#5a6478"><animate attributeName="width" values="0;196" dur="4s" repeatCount="indefinite"/></rect>
+            <text x="10" y="42">GPU</text>
+            <rect x="90" y="34" width="196" height="9" rx="4.5" fill="#1a2130"/>
+            <rect x="90" y="34" height="9" rx="4.5" fill="#ffb545"><animate attributeName="width" values="0;196" dur="0.6s" begin="0s" repeatCount="indefinite" calcMode="linear"/></rect>
+            <text x="10" y="66">REALTIME</text>
+            <rect x="90" y="58" width="196" height="9" rx="4.5" fill="#1a2130"/>
+            <rect x="90" y="58" width="196" height="9" rx="4.5" fill="#4cd98a">
+              <animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.2s" repeatCount="indefinite"/>
+            </rect>
+          </g>
+        </svg>
+        <p class="t-simple">いまは撮影のあと数分待つと3Dが出来上がります。専用の処理マシンを使えば数十倍速くなり、将来は「撮ったその場でリプレイを見る」ところまで行けます。撮影当日にラフ版、翌日に仕上げ版、という流れが現実的です。</p><p class="t-pro">現状はクリップあたり数分(一般的なPC・CPU処理)で、ボトルネックは2D姿勢推定です。GPUを使えば数十倍の短縮が見込め、その先には「撮ったその場で3Dリプレイを確認する」リアルタイム運用が技術的な射程に入っています。撮影当日にラフ版、翌日に仕上げ版、という運用が現実的なラインです。</p>
+        <div class="chips"><span>現在: 数分 / クリップ</span><span>GPU: 数十倍短縮</span><span>射程: リアルタイム</span></div>
+      </article>
+    </div>
+
+    <div class="facts">
+      <div class="fact"><b>4視点</b><span><em>今回の検証で使ったカメラの台数。</em>4台で同時撮影した実映像から、1つの3Dモーションへの統合が実際に成功しました</span></div>
+      <div class="fact"><b>26関節</b><span><em>1人あたり計測する体のポイント数。</em>肩・肘・膝だけでなく、つま先・小趾・かかとまで点として取得します</span></div>
+      <div class="fact"><b>平均0.26台</b><span><em>品質不足で計算から外れたカメラの数(関節1つあたりの平均)。</em>4台中つねに約3.7台が有効だった=ほぼ全ての瞬間を複数カメラで捉えられていた、という実測結果です</span></div>
+    </div>
+
+    <p class="tech-close">つまり ― <strong>森岡さんのプレーを4台の固定カメラで囲んで撮るだけで、本人の体の使い方がそのまま3Dになり、どの角度からでも・何度でも見られる教材になります。</strong>特別なスーツもマーカーも不要です。</p>
+  </section>
+
+  <footer>
+    本資料の3D表示はすべてコンセプト実証です。選手モーションは公開モーションキャプチャ素材および検証用データであり、特定選手の動作の正確な復元ではありません。
+  </footer>
+</div>
+<script>
+  // 説明モード切替(技術者向け ⇔ やさしい説明)
+  const modeButton = document.querySelector('#mode-btn');
+  const modeNote = document.querySelector('#mode-note');
+  modeButton.addEventListener('click', () => {
+    const simple = document.body.classList.toggle('simple');
+    modeButton.textContent = simple ? '🔧 技術者向けの説明に戻す' : '🙂 やさしい説明に切り替え';
+    modeNote.textContent = simple ? 'いまは、たとえ話中心のやさしい表記です' : 'いまは技術者向けの表記です';
+  });
+
+  // ⛶ ボタン共通: data-fullscreen="#セレクタ" の要素を全画面にする。
+  // Fullscreen API が使えない環境では data-fallback のページを直接開く。
+  for (const button of document.querySelectorAll('[data-fullscreen]')) {
+    button.addEventListener('click', async () => {
+      const target = document.querySelector(button.dataset.fullscreen);
+      const fallback = button.dataset.fallback;
+      try {
+        if (!target) throw new Error('target not found');
+        const request = target.requestFullscreen || target.webkitRequestFullscreen;
+        if (!request) throw new Error('fullscreen unsupported');
+        await request.call(target);
+      } catch (error) {
+        if (fallback) window.open(fallback, '_blank');
+      }
+    });
+  }
+</script>
+</body>
+</html>

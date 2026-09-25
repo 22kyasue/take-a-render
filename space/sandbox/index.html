@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:,"><title>Take A · Futsal Studio</title>
+<script type="importmap">{"imports":{"three":"../vendor/three.module.js","three/addons/controls/OrbitControls.js":"../vendor/OrbitControls.js"}}</script>
+<link rel="stylesheet" href="studio.css">
+<link rel="stylesheet" href="responsive.css">
+<link rel="stylesheet" href="immersive-view.css">
+<link rel="stylesheet" href="coaching.css">
+<link rel="stylesheet" href="avatar-guide.css"></head>
+<body>
+<header class="app-header">
+ <a class="brand" href="./" aria-label="Futsal Studio ホーム"><span class="brand-symbol">f<span> /</span></span><span>FUTSAL<span class="brand-light"> STUDIO</span></span></a>
+ <div class="session"><span class="live-dot"></span> MORIOKA <span class="slash">/</span> <strong>Take A</strong><span class="session-note">動きを、あらゆる角度から。</span></div>
+ <div class="header-meta"><span>4 CAMERAS</span><span>08 SEC</span><button id="snapshot" aria-label="3D画面の画像を保存">画像を保存 ↗</button></div>
+</header>
+<main>
+ <div class="replay-panel">
+ <section id="stage" aria-label="3Dワークスペース">
+  <canvas id="canvas" aria-label="森岡さんと相手のフットサル3Dサンドボックス"></canvas>
+  <div id="loading"><div><span class="live-dot"></span> コートと動作を読み込んでいます…</div></div>
+  <div class="stage-heading"><div class="eyebrow">TAKE A / SPATIAL REPLAY</div><h1>プレーを立体で読み解く</h1></div><button id="touch-orbit" aria-pressed="false">指で3Dを回転</button>
+  <div class="zoom-controls" role="group" aria-label="3Dの拡大縮小"><button id="zoom-in" aria-label="ズームイン" title="ズームイン">＋</button><button id="zoom-out" aria-label="ズームアウト" title="ズームアウト">−</button></div>
+  <nav class="viewbar" aria-label="3Dの視点"><button data-view="capture" class="active">カメラ配置</button><button data-view="close">選手に寄る</button><button data-view="opposite">反対側</button><button data-view="sideline">サイドライン</button><button data-view="goal">ゴール裏</button><button data-view="wide">全景</button><button data-view="top">真上</button></nav>
+  <div class="hud"><span class="live-dot"></span><span id="venue-label">INDOOR ARENA</span><span class="hud-separator">/</span><span id="phase">位置取り</span></div>
+  <div id="camera-labels" aria-label="撮影カメラの推定位置"></div>
+  <section id="camera-preview" aria-label="カメラ映像プレビュー" hidden>
+   <div class="preview-heading"><span id="preview-title"></span><button id="preview-close" aria-label="カメラ映像を閉じる">×</button></div>
+   <canvas id="preview-video" aria-label="選択したカメラの映像"></canvas>
+   <div class="preview-footer"><span id="preview-mode">ホバープレビュー</span><button id="preview-play">再生</button><button id="preview-view">このカメラの視点へ ↗</button></div>
+   <p id="preview-error" role="status"></p>
+  </section>
+  <div class="stage-footer-note">CAMERA POSITIONS <span>推定位置</span></div>
+ </section>
+  <div class="timeline">
+   <div class="timeline-caption"><span>TAKE A <span class="muted">/ プレイバック</span></span><span class="player-key"><i></i> 森岡さん <i></i> 相手</span></div>
+   <div class="row"><button id="play" disabled>再生</button><input id="seek" type="range" min="0" max="7.983333" step="0.016667" value="0" aria-label="再生位置"><span id="clock">0.00 / 8.00</span><select id="speed" aria-label="再生速度"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option></select></div>
+   <div class="moments"><button data-time="2.97"><span>01</span> 背負う</button><button data-time="3.55"><span>02</span> 手を伸ばす</button><button data-time="4.55"><span>03</span> トラップ</button><button data-time="4.95"><span>04</span> 前傾・接触</button><button data-time="5.6"><span>05</span> 持ち出す</button><button data-time="6.4"><span>06</span> シュート</button></div>
+   <div class="hint">ホイール・2本指ピンチ・＋／−でズーム · 1本指でページ移動</div>
+  </div>
+ </div>
+ <aside>
+  <section class="sources-panel">
+   <div class="section-heading"><div><div class="eyebrow">SOURCE ANGLES</div><h2>オリジナル映像 <span class="count">04</span></h2></div><button id="four-sources" aria-label="4方向の元映像を拡大">拡大 ↗</button></div>
+   <p class="section-description"><span class="source-description-touch">映像をタップで拡大。横並びの映像はスワイプで切り替え。</span><span class="source-description-mouse">4方向を同時に比較。映像にカーソルを合わせてプレビュー、クリックで固定。</span></p>
+   <div id="source-grid"></div>
+   <div class="source-transport"><button id="sources-play" disabled>再生</button><input id="sources-seek" type="range" min="0" max="7.983333" step="0.016667" value="0" aria-label="元映像の再生位置"><output id="sources-clock">0.00 / 8.00</output></div>
+   <div class="sync-note"><span class="live-dot"></span> 3Dの再生位置に連動 <span>同期補正は推定値</span></div>
+  </section>
+  <section class="map-panel"><div class="section-heading"><div><div class="eyebrow">CAPTURE GEOMETRY</div><h2>撮影位置</h2></div><span class="micro-label">推定</span></div><p class="section-description">3Dと同じ座標を、真上から。</p><div id="camera-map" aria-label="同一縮尺で表示したハーフコートと撮影位置"></div><div class="map-legend"><span><i class="map-player yellow"></i>森岡さん</span><span><i class="map-player blue"></i>相手</span><span>番号をタップして映像表示</span></div><div id="camera-register"></div><small class="map-note">縦横は同じ縮尺。選手位置は再生に連動します。カメラ位置・距離は既存の推定値で、撮影地点の実測ではありません。</small></section>
+  <details class="settings"><summary>表示設定<span>環境・選手</span></summary><div class="settings-body">
+   <h3>ENVIRONMENT</h3><label for="environment">会場の雰囲気</label><select id="environment"><option value="indoor">体育館 · 木のコート</option><option value="outdoor">屋外 · 天然芝のフィールド</option><option value="stadium">実写スタジアム</option></select>
+   <label for="exposure">明るさ</label><input id="exposure" type="range" min="0.6" max="1.8" value="1.1" step="0.05">
+   <label for="quality">描画品質</label><select id="quality"><option value="auto" selected>自動 · 画面に合わせる</option><option value="high">高品質</option><option value="light">軽量</option></select>
+   <label class="check"><input id="follow" type="checkbox">選手をカメラで追う</label><label class="check"><input id="loop" type="checkbox" checked>繰り返し再生</label>
+   <h3>PLAYERS</h3><label for="pose-mode">後ろの人の動作</label><select id="pose-mode"><option value="improved">改善版 · 裏・サイドを統合</option><option value="move">修正前 · サイド1本</option><option value="goalback">ゴール裏のMOVE単独</option><option value="east">東側のMOVE単独</option></select>
+   <label class="check"><input id="show-morioka" type="checkbox" checked>森岡さんを表示</label><label class="check"><input id="show-opponent" type="checkbox" checked>相手を表示</label><label class="check"><input id="show-ball" type="checkbox" checked>確認できた区間のボール</label>
+   <p id="status" role="status">動作を読み込み中…</p><small id="method-note">前の人は同じMOVE動作を保持。後ろの人だけ、ゴール裏・東側・サイドから個別処理した動きを組み合わせます。4映像の推定を照合に使ったローカル統合で、MOVEの4カメラ一括処理ではありません。接触・指先の精度は未確定です。</small>
+  </div></details>
+  <div class="aside-footer"><small>カメラ位置は既存映像からの推定です。コートは40×20m、ゴールは3×2mの仮想セットで、撮影施設の実寸再現ではありません。</small><div class="footer-links"><a href="../paid-ai/">MOVE比較 ↗</a><a href="../">以前の3D画面 ↗</a></div><small id="cost">処理料金を確認中</small></div>
+ </aside>
+ <section class="avatar-guide" id="avatar-guide" aria-labelledby="avatar-guide-title">
+  <div class="avatar-guide-heading"><div><div class="eyebrow">AVATAR / NEXT STEP</div><h2 id="avatar-guide-title">アバターを変えると、どこまで良くなる？</h2></div><span class="avatar-guide-badge">導入候補 · 未検証</span></div>
+  <p class="avatar-guide-intro">今のMOVE動作を生かして、体の曲がり方と、手が相手に触れる見え方をより自然に。</p>
+  <div class="avatar-guide-grid">
+   <figure class="avatar-guide-figure">
+    <a href="./assets/reference/soccer-player-candidate.png" target="_blank" rel="noopener" aria-label="候補アバターの正面・側面・背面画像を拡大（新しいタブ）"><img src="./assets/reference/soccer-player-candidate.png" width="853" height="492" loading="lazy" alt="紺色のサッカーユニフォームを着た候補アバター。腕を広げた正面・側面・背面の3方向。"></a>
+    <figcaption>Realistic Soccer Player - Rigged<br>参考画像：CGTrader商品ページ／ユーザー提供。現在の再生モデルとは異なります。</figcaption>
+    <a class="avatar-guide-link" href="https://www.cgtrader.com/3d-models/character/man/realistic-soccer-player-rigged" target="_blank" rel="noopener noreferrer">CGTraderで候補モデルを見る ↗</a>
+   </figure>
+   <div class="avatar-guide-copy">
+    <div class="avatar-guide-benefit"><span>01</span><div><h3>人らしい表面と関節へ</h3><p>肌・服・手の形があることで、プレーが伝わりやすくなります。肩や肘、膝が自然に曲がるかは、同じ動作を載せて確認します。</p></div></div>
+    <div class="avatar-guide-benefit"><span>02</span><div><h3>本人に近い寸法へ</h3><p>肩幅、腕の長さ、胴体の厚み、手の大きさを合わせると、手が届く位置や体同士の距離を合わせやすくなります。</p></div></div>
+    <div class="avatar-guide-benefit"><span>03</span><div><h3>触れている感覚まで調整</h3><p>手のひら・指を相手の体表に合わせ、浮き・めり込み・滑りを減らします。モデルの差し替えに加えて、接触区間の調整が必要です。</p></div></div>
+    <p class="avatar-guide-note">この候補の可動域・指の動き・MOVEとの相性は未検証です。高精細なモデルだけで、映像に写っていない接触情報まで復元できるわけではありません。</p>
+   </div>
+  </div>
+  <details class="avatar-guide-details"><summary>採寸・モデル選び・比較の進め方</summary><div>
+   <h3>最初から全身スキャンは不要</h3><p>まず体格の近いモデルへ、今の動作を載せて比較できます。精度を上げる段階で、2人それぞれの身長・肩幅・腕長・胴体の幅と厚み・手の寸法・脚長・靴の寸法を合わせます。映像からの推定と実測は区別します。</p>
+   <h3>購入前に確認すること</h3><p>動かすための骨格と指があること、前傾・ひねり・深い膝曲げで形が崩れないこと、体型を調整できること、ブラウザ向けに書き出せること。Webでの3D配信に合う利用条件と、タブレットでの再生負荷も確認します。</p>
+   <h3>今の出力を残して比較する</h3><p>同じ時刻・視点で、元モデルと候補モデルを切り替えます。背負う・前傾接触・持ち出し・シュートで、関節の変形、手の隙間やめり込み、足とボールの位置関係を確認。自然な見た目と、元映像への正確さを別々に評価します。</p>
+  </div></details>
+ </section>
+</main>
+<script type="module" src="app.js"></script>
+<script type="module" src="immersive-view.js"></script></body></html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090c12">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="data:,">
+  <title>制作手法デモ｜4点撮影 → 3D復元 → 自由視点</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #090c12; color: #e8ecf4; font: 14px/1.7 system-ui, sans-serif; overflow: hidden; }
+    .layout { display: grid; grid-template-columns: 340px 1fr; height: 100%; }
+    aside { background: #0d1118; border-right: 1px solid #1c2330; overflow-y: auto; padding: 20px 18px; }
+    .eyebrow { font-size: 11px; letter-spacing: 0.22em; color: #ffb545; margin-bottom: 6px; }
+    h1 { font-size: 19px; line-height: 1.45; margin-bottom: 6px; }
+    .note { font-size: 12px; color: #8892a4; margin-bottom: 18px; }
+    .step {
+      border: 1px solid #1c2330; border-radius: 12px; padding: 14px; margin-bottom: 12px;
+      cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .step:hover { background: #11161f; }
+    .step.active { border-color: #ffb545; background: #151b26; }
+    .step .num { font-size: 11px; letter-spacing: 0.2em; color: #ffb545; }
+    .step h2 { font-size: 15px; margin: 4px 0 4px; }
+    .step p { font-size: 12.5px; color: #aab3c4; }
+    main { position: relative; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .cams {
+      position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+      display: flex; gap: 8px; background: rgba(9,12,18,0.8); border: 1px solid #1c2330;
+      border-radius: 12px; padding: 8px;
+    }
+    .cams button {
+      padding: 7px 14px; background: transparent; border: 1px solid #2a3446; border-radius: 8px;
+      color: #cfd6e4; font: inherit; font-size: 12.5px; cursor: pointer;
+    }
+    .cams button.active { background: #ffb545; border-color: #ffb545; color: #14100a; font-weight: 700; }
+    .hud {
+      position: absolute; left: 16px; top: 14px; padding: 8px 14px; pointer-events: none;
+      background: rgba(9,12,18,0.78); border: 1px solid #1c2330; border-radius: 10px;
+    }
+    .hud strong { display: block; font-size: 14px; }
+    .hud span { font-size: 11px; color: #8892a4; }
+    .badge { position: absolute; right: 16px; top: 14px; font-size: 10px; letter-spacing: 0.2em; color: rgba(255,255,255,0.55); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <p class="eyebrow">PRODUCTION METHOD</p>
+      <h1>森岡薫の動きを、<br>どうやって3Dにするか</h1>
+      <p class="note">半面ピッチでの収録を想定した手法説明デモ。選手モーションは Mixamo 公開素材(本人ではありません)。</p>
+
+      <div class="step active" data-step="capture">
+        <p class="num">STEP 01</p>
+        <h2>4点同時撮影</h2>
+        <p>半面ピッチを囲む4台のカメラで同じプレーを同時収録。1台(単眼)では原理的に取れない奥行きと遮蔽を、多視点で補い合う。</p>
+      </div>
+      <div class="step" data-step="reconstruct">
+        <p class="num">STEP 02</p>
+        <h2>3D復元(トラッキング)</h2>
+        <p>4本の映像から関節位置を推定・統合し、骨格モーションへ変換。骨格ラインの表示がこの工程に対応する。</p>
+      </div>
+      <div class="step" data-step="freeview">
+        <p class="num">STEP 03</p>
+        <h2>自由視点サンドボックス</h2>
+        <p>復元したモーションはどの角度からでも再生できる。ゲームのリプレイのように回して、体の使い方を観察する。</p>
+      </div>
+    </aside>
+    <main>
+      <canvas id="stage"></canvas>
+      <div class="hud"><strong id="hud-title">STEP 01 ― 4点同時撮影</strong><span id="hud-sub">CAM 01–04 の配置と画角</span></div>
+      <p class="badge">CONCEPT DEMO · NOT PRODUCTION · MIXAMO MOTION</p>
+      <div class="cams" id="cam-bar">
+        <button data-cam="cam1">CAM 01</button>
+        <button data-cam="cam2">CAM 02</button>
+        <button data-cam="cam3">CAM 03</button>
+        <button data-cam="cam4">CAM 04</button>
+        <button data-cam="top">俯瞰</button>
+        <button data-cam="free" class="active">自由視点</button>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="./capture-method.js"></script>
+</body>
+</html>

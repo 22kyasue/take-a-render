@@ -485,7 +485,7 @@
 
   // ---------- 04: orbit viewer ----------
   const ORBIT = { n: 36, fps: 30, frames: 150, base: 'orbit/' };
-  let orbitReady = false, oi = 0, ot = 45 / 30, oPlaying = false, oSpeed = .5, oZoom = 1, oAuto = false, oVids = [], oCur = null, oRaf = 0, orbitAutoAcc = 0;
+  let orbitReady = false, oi = 0, ot = 45 / 30, oPlaying = false, oSpeed = .5, oZoom = 1, oAuto = false, oVids = [], oCur = null, oRaf = 0, orbitAutoAcc = 0, oSyncAcc = 0;
   const stage = $('#orbitStage'), oSeek = $('#orbitSeek'), oAngleEl = $('#orbitAngle'), oTimeEl = $('#orbitTime'), oNeedle = $('#orbitNeedle');
   const MOMENTS = [['背負う', 0], ['手を伸ばす', .55], ['トラップ', 1.55], ['接触', 2.37], ['シュート', 3.38], ['フォロースルー', 4.5]];
   $('#orbitMoments').innerHTML = MOMENTS.map(([n, tm], i) => `<button class="btn" data-t="${tm}"><i>${String(i + 1).padStart(2, '0')}</i>${n}</button>`).join('');
@@ -500,9 +500,30 @@
       stage.insertBefore(v, stage.querySelector('.hud'));
       oVids.push(v);
     }
-    oVids[oi].addEventListener('loadeddata', () => stage.classList.add('ready'), { once: true });
+    oVids[oi].addEventListener('loadeddata', () => { stage.classList.add('ready'); setTimeout(orbitWarm, 400); }, { once: true });
     orbitShow(oi, true);
     if (!oRaf) oRaf = requestAnimationFrame(orbitTick);
+  }
+  // warm-up: after the first angle is showing, fully buffer every other angle two at a time (nearest first)
+  // so a swipe anywhere around the circle never waits on the network. Muted inline play/pause forces
+  // iOS Safari to actually fetch and decode; the clip is then parked on the current time.
+  let oWarmed = false;
+  function orbitWarm() {
+    if (oWarmed) return; oWarmed = true;
+    const order = []; for (let d = 1; d < ORBIT.n; d++) order.push(wrapIdx(oi + (d % 2 ? (d + 1) / 2 : -d / 2)));
+    let k = 0;
+    const next = () => {
+      if (k >= order.length) return;
+      const v = oVids[order[k++]]; let fin = false;
+      const done = () => { if (fin) return; fin = true; clearTimeout(tm); if (v !== oCur) { v.pause(); if (Math.abs(v.currentTime - ot) > 0.1) v.currentTime = ot; } setTimeout(next, 40); };
+      const tm = setTimeout(done, 6000);
+      v.preload = 'auto';
+      if (v.readyState >= 4) return done();
+      v.addEventListener('canplaythrough', done, { once: true });
+      if (v.readyState < 1) v.load();
+      if (v !== oCur) v.play().then(() => { if (v !== oCur) v.pause(); }).catch(() => {});
+    };
+    next(); next();
   }
   function orbitShow(i, force) {
     i = wrapIdx(i);
@@ -520,6 +541,11 @@
   function orbitTick() {
     if (oCur && oPlaying) ot = oCur.currentTime;
     if (oCur) { oSeek.value = Math.round(ot * ORBIT.fps); oTimeEl.textContent = ot.toFixed(2) + ' s'; }
+    // keep the three neighbours on each side parked on the current time while playing, so the swap on a swipe
+    // shows the right frame immediately instead of the frame from the last switch
+    if (oCur && oPlaying && (oSyncAcc = (oSyncAcc || 0) + 1) % 8 === 0) {
+      for (const d of [-3, -2, -1, 1, 2, 3]) { const nb = oVids[wrapIdx(oi + d)]; if (nb.readyState >= 1 && !nb.seeking && Math.abs(nb.currentTime - ot) > 0.12) nb.currentTime = ot; }
+    }
     if (oAuto && oPlaying) { orbitAutoAcc += .12 * oSpeed; if (orbitAutoAcc >= 1) { orbitAutoAcc = 0; orbitShow(oi + 1); } }
     oRaf = requestAnimationFrame(orbitTick);
   }

@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="responsive.css">
 <link rel="stylesheet" href="immersive-view.css">
 <link rel="stylesheet" href="coaching.css">
-<link rel="stylesheet" href="avatar-guide.css">
+
 <script>
 if (new URLSearchParams(location.search).get('embed') === '1') {
  const style = document.createElement('link');
@@ -67,28 +67,6 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
   </div></details>
   <div class="aside-footer"><small>カメラ位置は既存映像からの推定です。コートは40×20m、ゴールは3×2mの仮想セットで、撮影施設の実寸再現ではありません。</small><div class="footer-links"><a href="../paid-ai/">MOVE比較 ↗</a><a href="../">以前の3D画面 ↗</a></div><small id="cost">処理料金を確認中</small></div>
  </aside>
- <section class="avatar-guide" id="avatar-guide" aria-labelledby="avatar-guide-title">
-  <div class="avatar-guide-heading"><div><div class="eyebrow">AVATAR / NEXT STEP</div><h2 id="avatar-guide-title">アバターを変えると、どこまで良くなる？</h2></div><span class="avatar-guide-badge">導入候補 · 未検証</span></div>
-  <p class="avatar-guide-intro">今のMOVE動作を生かして、体の曲がり方と、手が相手に触れる見え方をより自然に。</p>
-  <div class="avatar-guide-grid">
-   <figure class="avatar-guide-figure">
-    <a href="./assets/reference/soccer-player-candidate.png" target="_blank" rel="noopener" aria-label="候補アバターの正面・側面・背面画像を拡大（新しいタブ）"><img src="./assets/reference/soccer-player-candidate.png" width="853" height="492" loading="lazy" alt="紺色のサッカーユニフォームを着た候補アバター。腕を広げた正面・側面・背面の3方向。"></a>
-    <figcaption>Realistic Soccer Player - Rigged<br>参考画像：CGTrader商品ページ／ユーザー提供。現在の再生モデルとは異なります。</figcaption>
-    <a class="avatar-guide-link" href="https://www.cgtrader.com/3d-models/character/man/realistic-soccer-player-rigged" target="_blank" rel="noopener noreferrer">CGTraderで候補モデルを見る ↗</a>
-   </figure>
-   <div class="avatar-guide-copy">
-    <div class="avatar-guide-benefit"><span>01</span><div><h3>人らしい表面と関節へ</h3><p>肌・服・手の形があることで、プレーが伝わりやすくなります。肩や肘、膝が自然に曲がるかは、同じ動作を載せて確認します。</p></div></div>
-    <div class="avatar-guide-benefit"><span>02</span><div><h3>本人に近い寸法へ</h3><p>肩幅、腕の長さ、胴体の厚み、手の大きさを合わせると、手が届く位置や体同士の距離を合わせやすくなります。</p></div></div>
-    <div class="avatar-guide-benefit"><span>03</span><div><h3>触れている感覚まで調整</h3><p>手のひら・指を相手の体表に合わせ、浮き・めり込み・滑りを減らします。モデルの差し替えに加えて、接触区間の調整が必要です。</p></div></div>
-    <p class="avatar-guide-note">この候補の可動域・指の動き・MOVEとの相性は未検証です。高精細なモデルだけで、映像に写っていない接触情報まで復元できるわけではありません。</p>
-   </div>
-  </div>
-  <details class="avatar-guide-details"><summary>採寸・モデル選び・比較の進め方</summary><div>
-   <h3>最初から全身スキャンは不要</h3><p>まず体格の近いモデルへ、今の動作を載せて比較できます。精度を上げる段階で、2人それぞれの身長・肩幅・腕長・胴体の幅と厚み・手の寸法・脚長・靴の寸法を合わせます。映像からの推定と実測は区別します。</p>
-   <h3>購入前に確認すること</h3><p>動かすための骨格と指があること、前傾・ひねり・深い膝曲げで形が崩れないこと、体型を調整できること、ブラウザ向けに書き出せること。Webでの3D配信に合う利用条件と、タブレットでの再生負荷も確認します。</p>
-   <h3>今の出力を残して比較する</h3><p>同じ時刻・視点で、元モデルと候補モデルを切り替えます。背負う・前傾接触・持ち出し・シュートで、関節の変形、手の隙間やめり込み、足とボールの位置関係を確認。自然な見た目と、元映像への正確さを別々に評価します。</p>
-  </div></details>
- </section>
 </main>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=mannequin-20260928"></script>
 <script type="module" src="immersive-view.js"></script></body></html>

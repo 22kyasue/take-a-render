@@ -8,7 +8,6 @@ import { createSourceWall, createCaptureWorkspace } from './capture-workspace.js
 import { createBallRollSampler } from './ball-roll.js';
 import { createGoalResponse } from './goal-response.js';
 import { installViewportZoom } from './viewport-zoom.js';
-import { attachExternalPlayer, captureMoveRest } from './external-player.js';
 import { createPlaybackClock } from './playback-clock.js';
 import { displayProfile } from './display-profile.js';
 import { createFootContact } from './foot-contact.js';
@@ -64,7 +63,6 @@ async function loadPlayer(role, url, color, sourceOffset = 0) {
  const gltf = await new GLTFLoader().loadAsync(url);
  if (!gltf.animations.length) throw new Error(`MOVE animation missing: ${role}`);
  const group = new THREE.Group(); group.add(gltf.scene); scene.add(group);
- const bind = captureMoveRest(gltf.scene);
  // MOVE frame zero is the export bind pose, not an observed human pose.
  const firstMotionTime = 1 / 60;
  const mixer = new THREE.AnimationMixer(gltf.scene); for (const clip of gltf.animations) mixer.clipAction(clip).play(); mixer.setTime(firstMotionTime);
@@ -73,7 +71,15 @@ async function loadPlayer(role, url, color, sourceOffset = 0) {
   if (!o.isMesh) return;
   o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
   const materials = Array.isArray(o.material) ? o.material : [o.material];
-  const copies = materials.map(source => { const m = source.clone(); if (m.color && m.color.r + m.color.g + m.color.b > 1.25) { m.color.set(color); m.roughness = .47; m.metalness = .08; } return m; });
+  const copies = materials.map(source => {
+   const m = source.clone();
+   if (m.color) m.color.set(color);
+   m.map = null;
+   if (m.emissive) m.emissive.set(0x000000);
+   m.emissiveMap = null;
+   m.roughness = .47; m.metalness = .08;
+   return m;
+  });
   o.material = Array.isArray(o.material) ? copies : copies[0];
  });
  group.updateMatrixWorld(true);
@@ -83,12 +89,9 @@ async function loadPlayer(role, url, color, sourceOffset = 0) {
  const scale = THREE.MathUtils.clamp(targetLeg / measuredLeg, .6, 1.6);
  const shadowCanvas = document.createElement('canvas'); shadowCanvas.width = shadowCanvas.height = 128; const ctx = shadowCanvas.getContext('2d'); const gradient = ctx.createRadialGradient(64, 64, 6, 64, 64, 64); gradient.addColorStop(0, '#050a0d88'); gradient.addColorStop(1, '#050a0d00'); ctx.fillStyle = gradient; ctx.fillRect(0, 0, 128, 128);
  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false })); shadow.rotation.x = -Math.PI / 2; scene.add(shadow);
- let external;
- // Explicit preview keeps the existing default and other sessions intact.
- const variant = new URLSearchParams(location.search).get('playerCandidate');
- try { if(['geek3dom','studio'].includes(variant)) external = await attachExternalPlayer({group, source:gltf.scene, bind, color, variant}); }
- catch(error) { $('canvas').dataset.externalPlayerError=error.message; console.warn('External player unavailable; using MOVE model',error); }
- return { group, mixer, joints, scale, shadow, sourceOffset, firstMotionTime, external, contact: createFootContact(group,joints), duration: Math.min(...gltf.animations.map(a => a.duration)) };
+ // The public viewer uses the original yellow/blue MOVE mannequins only.
+ // Legacy playerCandidate URLs must never enable the rejected human avatars.
+ return { group, mixer, joints, scale, shadow, sourceOffset, firstMotionTime, contact: createFootContact(group,joints), duration: Math.min(...gltf.animations.map(a => a.duration)) };
 }
 const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xf5efdc, roughness: .52 });
 const ball = new THREE.Mesh(new THREE.SphereGeometry(.105, 24, 16), ballMaterial); ball.castShadow = true; scene.add(ball);
@@ -120,7 +123,6 @@ function alignPlayer(player, frame, role, t) {
  if (role === 'morioka') $('canvas').dataset.frontPose = JSON.stringify(Object.values(player.joints).flatMap(bone => [...world(bone).toArray(), ...bone.getWorldQuaternion(new THREE.Quaternion()).toArray()]));
  }
  player.shadow.position.set(targetHip.x, .018, targetHip.z); player.shadow.visible = player.group.visible;
- if(player.external) $('canvas').dataset[`${role}MeshWristError`] = player.external.update().toFixed(8);
 }
 function time() { return Math.max(0, Math.min(7.983333, playback.currentTime || 0)); }
 function centerAt(t) { const f = data.frames[Math.min(479, Math.round(t * 60))]; return average(point(f, 'morioka', 11), point(f, 'opponent', 11)).setY(.95); }
@@ -236,19 +238,8 @@ try {
  contactSelect.add(new Option('床との接地を調整','corrected')); contactSelect.add(new Option('元のMOVE動作と比較','original'));
  $('pose-mode').before(contactLabel,contactSelect);
  contactSelect.onchange=()=>{lastTime=-1;pose(time());};
- if(loaded.some(player=>player?.external)) {
- const meshLabel=document.createElement('label'); meshLabel.htmlFor='player-mesh'; meshLabel.textContent='人物の見た目';
- const meshSelect=document.createElement('select'); meshSelect.id='player-mesh';
- for(const [value,text] of [['external',new URLSearchParams(location.search).get('playerCandidate')==='studio' ? 'Studio改作 · 半袖ユニフォーム' : 'ユニフォーム姿 · 外部製モデル'],['move','MOVEモデル · 比較用']]) { const option=new Option(text,value); meshSelect.add(option); }
- const externalReady=loaded.filter(Boolean).every(player=>player.external);
- if(!externalReady) { meshSelect.value='move'; meshSelect.options[0].disabled=true; for(const player of loaded.filter(Boolean)) player.external?.setVisible(false); }
- $('pose-mode').before(meshLabel,meshSelect);
- meshSelect.onchange=()=>{ for(const player of loaded.filter(Boolean)) player.external?.setVisible(meshSelect.value==='external'); };
- const meshCredit=document.createElement('small'); meshCredit.textContent=new URLSearchParams(location.search).get('playerCandidate')==='studio' ? 'Studio改作：髪・服・表面を調整。人体・骨格の原作：Geek3Dom / CGTrader。本人の容姿の再現ではありません。' : '人物素材：Geek3Dom / CGTrader。汎用モデルで、本人の顔・体型の再現ではありません。';
- if(!externalReady) meshCredit.textContent='外部人物素材を読み込めなかったため、MOVEモデルを表示しています。';
- meshSelect.after(meshCredit);
- }
- $('canvas').dataset.externalPlayers=String(loaded.filter(player=>player?.external).length);
+ $('canvas').dataset.externalPlayers = '0';
+ $('canvas').dataset.playerStyle = 'move-mannequin';
  await environment.ready;
  if (!manifest.goalback) {
   document.querySelector('option[value="goalback"]').disabled = true;
@@ -259,7 +250,7 @@ try {
  players.morioka.group.visible = $('show-morioka').checked;
  captureWorkspace.build(data.cameras || [], centerAt(2.97));
  ready = true; selectOpponent(); setView(currentView); seek(2.97); $('loading').hidden = true; $('play').disabled = false; $('canvas').dataset.ready = 'true'; $('canvas').dataset.environment = 'indoor';
- if (new URLSearchParams(location.search).get('playerCandidate') === 'studio') {
+ if (new URLSearchParams(location.search).get('embed') === '1') {
   setView('opposite');
   camera.position.sub(controls.target).multiplyScalar(.62).add(controls.target);
   controls.update();

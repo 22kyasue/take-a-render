@@ -8,7 +8,14 @@
 <link rel="stylesheet" href="responsive.css">
 <link rel="stylesheet" href="immersive-view.css">
 <link rel="stylesheet" href="coaching.css">
-<link rel="stylesheet" href="avatar-guide.css"></head>
+<link rel="stylesheet" href="avatar-guide.css">
+<script>
+if (new URLSearchParams(location.search).get('embed') === '1') {
+ const style = document.createElement('link');
+ style.rel = 'stylesheet'; style.href = '../../embed.css';
+ document.head.append(style);
+}
+</script></head>
 <body>
 <header class="app-header">
  <a class="brand" href="./" aria-label="Futsal Studio ホーム"><span class="brand-symbol">f<span> /</span></span><span>FUTSAL<span class="brand-light"> STUDIO</span></span></a>

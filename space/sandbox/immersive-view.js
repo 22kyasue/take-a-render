@@ -52,4 +52,5 @@ document.addEventListener('keydown', event => {
 });
 // CSS fullscreen works on iPhone Safari as well as browsers with no element
 // Fullscreen API. The dynamic viewport follows the browser's address bar.
-if (matchMedia('(pointer: coarse)').matches && Math.min(innerWidth, innerHeight) < 600) setImmersive(true);
+// Embedded replay is sized and managed by the parent viewer.
+if (window.self === window.top && matchMedia('(pointer: coarse)').matches && Math.min(innerWidth, innerHeight) < 600) setImmersive(true);
